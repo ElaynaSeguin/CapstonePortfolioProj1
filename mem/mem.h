@@ -6,7 +6,7 @@
 
 
 class mem {
-    const int mem_size = 2048;
+    const int mem_size = 2048;  //change to hashmap
     // default size of sram is 2048
     uint32_t sram[2048];
 public:
