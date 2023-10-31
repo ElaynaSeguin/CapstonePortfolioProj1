@@ -29,15 +29,15 @@ private:
   uint32_t get_jal_offset(uint32_t instr);
 
   //funct 3 & 7 for each instruction type 
-  const uint8_t R = 0x00110011;     
-  const uint8_t S = 0x00100011;     
-  const uint8_t L = 0x00000011;     
-  const uint8_t I = 0x00010011;     
-  const uint8_t SB = 0x01100011;    
-  const uint8_t UJ = 0x01101111;    
-  const uint8_t JALR = 0x01100111;  
-  const uint8_t LUI = 0x00110111;  
-  const uint8_t AUIPC = 0x00010111;
+  const static uint8_t S = 0b00100011;     
+  const static uint8_t R = 0b00110011;     
+  const static uint8_t L = 0b00000011;     
+  const static uint8_t I = 0b00010011;     
+  const static uint8_t SB = 0b01100011;    
+  const static uint8_t UJ = 0b01101111;    
+  const static uint8_t JALR = 0b01100111;  
+  const static uint8_t LUI = 0b00110111;  
+  const static uint8_t AUIPC = 0b00010111;
 };
 
 #endif
