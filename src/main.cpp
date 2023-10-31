@@ -16,11 +16,10 @@ void clockStop();
 clock_t timer;
 int totalTime = 0;
 uint32_t breakpoints[5] = {0xFFFFFFFF}; // initialize to FF (never reached)
-// cpu CPU;
 
 int main()
 {
-    // readFile();
+    readFile();
 
     // INTANTIATE & RUN CPU
 
@@ -30,15 +29,14 @@ int main()
         userInput();
     }
     
-
     // DISPLAY TIME
-    //  cout << "\nTotal Time:" << totalTime;
-    //  clockStart();
-    //  sleep(10);
-    //  clockStop();
-    //  cout << fixed << "\nTotal Time:" << (float)totalTime / CLOCKS_PER_SEC << " sec" << scientific;
+     cout << "\nTotal Time:" << totalTime;
+     clockStart();
+     sleep(10);
+     clockStop();
+     cout << fixed << "\nTotal Time:" << (float)totalTime / CLOCKS_PER_SEC << " sec" << scientific;
 
-    // writeFile();
+    writeFile();
 
     return 0;
 }
@@ -104,7 +102,7 @@ void writeFile()
     }
 
     // get translated instruction from CPU.decode() ???
-    file << "HELLO" << endl;
+    file << "TESTING OUTPUT" << endl;
     file.close();
 }
 
