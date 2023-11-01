@@ -22,6 +22,8 @@ int main()
     readFile();
 
     // INTANTIATE & RUN CPU
+    cpu cpu;
+    cpu.run();
 
     // REQUEST USER INPUT
     while (true)

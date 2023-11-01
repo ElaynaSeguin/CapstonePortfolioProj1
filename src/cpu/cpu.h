@@ -1,6 +1,9 @@
 #include <iostream>
 #include <cstdint>
 #include <stdint.h>
+#include "mem/mem.h"
+#include "reg/reg.h"
+#include "alu/alu.h"
 
 #ifndef CPU_H
 #define CPU_H
