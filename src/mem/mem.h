@@ -5,7 +5,7 @@
 #define RISCV_SIMULATOR_MEM_H
 
 class mem {
-    const int mem_size = 2048;  //change to hashmap
+    const int static mem_size = 2048;  //change to hashmap
     uint32_t sram[2048];
 public:
     mem();

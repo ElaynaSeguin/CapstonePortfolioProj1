@@ -3,7 +3,7 @@
 #include "reg.h"
 using namespace std;
 
-Register::Register()
+reg::reg()
 {
     // Initialize the registers, x0 is hardwired to zero.
     for (int i = 0; i < 32; i++)
@@ -13,7 +13,7 @@ Register::Register()
 }
 
 // Read the value from register rd
-uint32_t Register::readReg(uint8_t rd) const
+uint32_t reg::readReg(uint8_t rd) const
 {
     if (rd == 0)
         return 0; // x0 is hardwired to zero
@@ -21,9 +21,10 @@ uint32_t Register::readReg(uint8_t rd) const
 }
 
 // Write a value to register rd
-void Register::writeReg(uint8_t rd, uint32_t value)
+void reg::writeReg(uint8_t rd, uint32_t value)
 {
-    if (rd != 0){  
+    if (rd != 0)
+    {
         // Avoid writing to register x0
         registers[rd] = value;
     }
@@ -31,7 +32,7 @@ void Register::writeReg(uint8_t rd, uint32_t value)
 
 int main()
 {
-    Register registerFile;
+    reg registerFile;
 
     // test: Write a value to register x10
     registerFile.writeReg(10, 42);

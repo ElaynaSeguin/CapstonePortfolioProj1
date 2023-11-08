@@ -19,26 +19,30 @@ uint32_t breakpoints[5] = {0xFFFFFFFF}; // initialize to FF (never reached)
 
 int main()
 {
-    readFile();
-
-    // INTANTIATE & RUN CPU
-    cpu cpu;
-    cpu.run();
-
-    // REQUEST USER INPUT
+    readFile(); //LOAD INSTRUCTIONS IN MEM
+    cpu cpu; // INTANTIATE & RUN CPU
+    // cpu.run();
+    // bool cpu_is_running = true;
     while (true)
     {
-        userInput();
+        userInput();  // REQUEST USER INPUT
+        // clockStart();
+        // cpu.fetch();
+        writeFile();
+        // cpu.execute();
+        // clockStop();
+        // if (cpu.getPC() == 0) //check if end
+        //     break;
     }
 
     // DISPLAY TIME
-    cout << "\nTotal Time:" << totalTime;
-    clockStart();
-    sleep(10);
-    clockStop();
-    cout << fixed << "\nTotal Time:" << (float)totalTime / CLOCKS_PER_SEC << " sec" << scientific;
+    // cout << "\nTotal Time:" << totalTime;
+    // clockStart();
+    // sleep(10);
+    // clockStop();
+    // cout << fixed << "\nTotal Time:" << (float)totalTime / CLOCKS_PER_SEC << " sec" << scientific;
 
-    writeFile();
+    // writeFile();
 
     return 0;
 }
@@ -87,9 +91,11 @@ void readFile()
     }
     file.close();
 
-    // for(bitset<32> instr:list){  //DEBUG
-    //     cout << instr << "\n";
-    // }
+    for (int i = 0; i < list.size(); i++)//DEBUG
+    {
+        cout << list[i] << "\n";
+    }
+    
 
     cout << "~~ Loading complete ~~\n";
 }
@@ -97,7 +103,7 @@ void readFile()
 // Write to .ASM file for Debugging
 void writeFile()
 {
-    string output = "output.asm";
+    string output = "test.asm";
     ofstream file(output, ios::app); // append
     if (!file)
     {
@@ -106,6 +112,7 @@ void writeFile()
     }
 
     // get translated instruction from CPU.decode() ???
+    // file << cpu.getAsmInstruction() << endl;
     file << "TESTING OUTPUT" << endl;
     file.close();
 }

@@ -8,13 +8,13 @@
 class alu
 {
 public:
-    alu();
+    // alu();
     void executeInstruction(std::string instruction);
-    int calculateALU(std::string op, int input1, int input2);
+    int calculateALU(uint8_t opcode, uint32_t input1, uint32_t input2);
 
 private:
-    int mapOperationToCode(const std::string &op);
-    int mapALUOperationToCode(const std::string &op);
+    // int mapOperationToCode(const std::string &op);
+    // int mapALUOperationToCode(const std::string &op);
 
     std::vector<int> registers; // 32 general-purpose registers
     // Define unique integer values for instructions
@@ -29,6 +29,7 @@ private:
     static const int SRA = 9;
     static const int BEQ = 10;
     static const int BNE = 11;
+    
     // Define unique integer values for ALU operations
     static const int ADD = 101;
     static const int SUB_ALU = 102;
