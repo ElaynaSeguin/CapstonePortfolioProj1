@@ -31,7 +31,7 @@ private:
   uint8_t getrd(uint32_t instr);
   uint8_t getrs1(uint32_t instr);
   uint8_t getrs2(uint32_t instr);
-  uint8_t getfunc3(uint32_t instr);
+  uint8_t getfunct3(uint32_t instr);
   uint8_t getfunct7(uint32_t instr);
   uint32_t getimm12(uint32_t instr);
   uint32_t get_branch_imm(uint32_t instr);
