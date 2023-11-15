@@ -2,9 +2,6 @@
 
 cpu::cpu()
 {
-    // mem mem;
-    // reg reg;
-    // alu alu;
     PC = 0;
     AsmInstruction = "";
 }
