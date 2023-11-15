@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <cstdint>
 
 #ifndef ALU_H
 #define ALU_H
@@ -8,40 +9,19 @@
 class alu
 {
 public:
-    // alu();
-    void executeInstruction(std::string instruction);
-    int calculateALU(uint8_t opcode, uint32_t input1, uint32_t input2);
-
+    uint32_t alu::calculate(uint32_t in1, uint32_t in2, uint8_t op);
 private:
-    // int mapOperationToCode(const std::string &op);
-    // int mapALUOperationToCode(const std::string &op);
-
-    std::vector<int> registers; // 32 general-purpose registers
-    // Define unique integer values for instructions
-    static const int LUI = 1;
-    static const int ADDI = 2;
-    static const int SUB = 3;
-    static const int AND = 4;
-    static const int OR = 5;
-    static const int XOR = 6;
-    static const int SLL = 7;
-    static const int SRL = 8;
-    static const int SRA = 9;
-    static const int BEQ = 10;
-    static const int BNE = 11;
-    
-    // Define unique integer values for ALU operations
-    static const int ADD = 101;
-    static const int SUB_ALU = 102;
-    static const int AND_ALU = 103;
-    static const int OR_ALU = 104;
-    static const int XOR_ALU = 105;
-    static const int SLL_ALU = 106;
-    static const int SRL_ALU = 107;
-    static const int SRA_ALU = 108;
-    static const int EQ = 109;
-    static const int NE = 110;
-    static const int LT = 111;
-    static const int GE = 112;
+    std::vector<uint32_t > registers; // 32 general-purpose registers
+    // Use funct3 & funct7 to identify alu instruction
+    const uint8_t ADD = 0b00000000;  
+    const uint8_t SLL = 0b00000001;  
+    const uint8_t XOR = 0b00000100;  
+    const uint8_t OR = 0b00000110;   
+    const uint8_t AND = 0b00000111;  
+    const uint8_t SRL = 0b00000101;  
+    const uint8_t SUB = 0b00001000;  
+    const uint8_t SRA = 0b00001101;  
+    const uint8_t SLT = 0b00000010;  
+    const uint8_t SLTU = 0b00000011; 
 };
 #endif
