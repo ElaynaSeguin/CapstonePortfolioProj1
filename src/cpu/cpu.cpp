@@ -43,12 +43,11 @@ void cpu::run()
         case LUI:
             lui(instr[i]);
             break;
+        case AUIPC:
+            auipc(instr[i]);
+            break;
         }
     }
-
-    // switch case for instruction type
-
-    // convert to String
 }
 
 // USER OPTIONS FUNCTIONS
@@ -90,9 +89,9 @@ uint8_t cpu::getfunct7(uint32_t instr)
 {
     return (uint8_t)(instr >> 25) & 0b01111111;
 }
-uint16_t cpu::getimm12(uint32_t instr)
+int16_t cpu::getimm12(uint32_t instr)
 {
-    uint16_t val = (uint16_t)(instr >> 20) & 0b0111111111111;
+    int16_t val = (int16_t)(instr >> 20) & 0b0111111111111;
     if (val & 0b100000000000)               // check msb
         return (val | 0b1111000000000000);  // if (-), sign-extend
     return val;
@@ -101,9 +100,11 @@ uint8_t cpu::getALU_op(uint32_t instr)
 {
     uint8_t funct3 = getfunct3(instr);
     uint8_t funct7 = getfunct7(instr);
-    return funct3 | funct7;
-}
 
+    if (funct7 == 0b0100000)
+        return funct3 | funct7;
+    return funct3;
+}
 uint32_t cpu::get_branch_imm(uint32_t instr)
 {
     uint32_t imm = 0;
@@ -123,7 +124,6 @@ uint32_t cpu::get_branch_imm(uint32_t instr)
     
     return imm;
 }
-
 uint32_t cpu::get_jal_offset(uint32_t instr)
 {
     uint32_t offset = 0;
@@ -145,45 +145,41 @@ uint32_t cpu::get_jal_offset(uint32_t instr)
 
 void cpu::r_type(uint32_t instr)
 {
-    cout << "R-type" << endl; // DEBUG
     uint8_t alu_op = getALU_op(instr);
-    cout << "aluOp:" << static_cast<int>(alu_op);
     uint8_t rd = getrd(instr);
     uint8_t rs1 = getrs1(instr);
-    uint8_t rs2 = getrs2(instr);
+    int8_t rs2 = getrs2(instr);
 
-    uint32_t val1 = reg.readReg(rs1); // read from reg
-    uint32_t val2 = reg.readReg(rs2);
+    uint16_t val1 = reg.readReg(rs1);                   // read from reg
+    uint16_t val2 = reg.readReg(rs2);
     uint32_t result = alu.calculate(val1, val2, alu_op); // execute
-    reg.writeReg(rd, result);                            // write to reg
-}
-void cpu::i_type(uint32_t instr)
-{
-    cout << "I-type" << endl; // DEBUG
-    // delete, issue w/ include "alu.h"
-    const static uint8_t SLLI = 0b00000001;
-    const static uint8_t SRLI = 0b00001001;
-    const static uint8_t SRAI = 0b00000011;
-    //
-    uint8_t alu_op = getfunct3(instr) | 0b00000000;
-    uint8_t rd = getrd(instr);
-    uint8_t rs1 = getrs1(instr);
-    uint8_t rs2 = getrs2(instr); //only for shift instructions
-
-    uint32_t val1 = reg.readReg(rs1); // read from reg
-    uint16_t val2 = getimm12(instr);
-    if (alu_op == SLLI || alu_op == SRLI || alu_op == SRAI)
-        val2 = reg.readReg(rs2); // getShamt()
-
-    uint32_t result = alu.calculate(val1, (uint32_t)val2, alu_op); // execute
     reg.writeReg(rd, result);                            // write to reg
 
     // DEBUG
-    // cout << "rd:" << static_cast<int>(rd) << " rs1:" << static_cast<int>(rs1) << " rs2:" << static_cast<int>(val2) << endl;
-    // cout << "val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
-    // cout << "(binary)val2:" <<bitset<sizeof(int) * 8>(val2)<<endl;
+    cout << stringify(instr,rd,rs1,rs2)<< endl;
+    cout << "val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
 }
+void cpu::i_type(uint32_t instr)
+{
+    uint8_t alu_op = getALU_op(instr);
+    uint8_t rd = getrd(instr);
+    uint8_t rs1 = getrs1(instr);
+    int8_t rs2 = getrs2(instr); // only for shift instructions
 
+    int16_t val1 = reg.readReg(rs1); // read from reg
+    int16_t val2 = getimm12(instr);
+    if (alu_op == SLL || alu_op == SRL || alu_op == SRA)
+        val2 = rs2; // getShamt()
+
+    cout << stringify(instr, rd, rs1, val2) << endl;
+    int32_t result = alu.calculate(val1, val2, alu_op); // execute
+    reg.writeReg(rd, result);                           // write to reg
+
+    // DEBUG
+    cout << "val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
+    // cout << "(binary)result:" << bitset<32>(result)<<endl;
+    // cout << "register: "<<reg.readReg(rd)<<endl;   //check if stored properly
+}
 void cpu::s_type(uint32_t instr)
 {
 }

@@ -68,7 +68,7 @@ vector<uint32_t> readFile()
       {
         uint32_t val = bitset<32>(str).to_ulong(); // Convert string to binary
         result.push_back(val);                     // save instruction
-        cout << str << endl;
+        // cout << str << endl;
         str.clear();
       }
     }
