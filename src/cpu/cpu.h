@@ -46,7 +46,7 @@ private:
     uint32_t get_branch_imm(uint32_t instr);
     uint32_t get_jal_offset(uint32_t instr);
     uint8_t getALU_op(uint32_t instr);
-    string convertASM(uint8_t op, uint8_t in1, uint8_t in2);
+    string stringify(int32_t line, int8_t rd,int8_t rs1,int16_t rs2);
     // EXECUTE
     void r_type(uint32_t instr);
     void i_type(uint32_t instr);

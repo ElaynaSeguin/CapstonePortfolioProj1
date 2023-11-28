@@ -64,10 +64,6 @@ uint32_t cpu::getMem(uint32_t addr)
 {
     return mem.get_mem(addr);
 }
-string cpu::convertASM(uint8_t op, uint8_t in1, uint8_t in2)
-{
-    return "";
-}
 
 // DECODE FUNCTIONS
 uint8_t cpu::getOpcode(uint32_t instr)
@@ -208,4 +204,73 @@ void cpu::lui(uint32_t instr)
 }
 void cpu::auipc(uint32_t instr)
 {
+}
+
+//convert binary to asm string representation
+string cpu::stringify(int32_t instr, int8_t rd,int8_t rs1,int16_t rs2)
+{
+    string str="";
+    uint8_t opcode = getOpcode(instr);
+    uint8_t aluOp = getALU_op(instr);
+    uint8_t funct3 = getfunct3(instr);
+    uint8_t funct7 = getfunct7(instr);
+    
+    switch(opcode){
+        case R:
+        case I:
+            switch (aluOp) {
+                case ADD: str = "add"; break;
+                case SUB: str = "sub"; break;
+                case XOR: str = "xor"; break;
+                case OR: str = "or"; break;
+                case AND: str = "and"; break;
+                case SLL: str = "sll"; break;
+                case SRL: str = "srl"; break;
+                case SRA: str = "sra"; break;
+                case SLT: str = "slt"; break;
+                case SLTU: str = "sltu"; break;
+                default: str = "invalid aluOp"; 
+            }
+            if (opcode == I) str+="i";
+            break;
+        case L:
+            switch (funct3) {
+                case 0b000: str = "lb"; break;
+                case 0b001: str = "lh"; break;
+                case 0b010: str = "lw"; break;
+                case 0b100: str = "lbu"; break;
+                case 0b101: str = "lhu"; break;
+                default: str = "invalid L-type"; break;
+            }
+            break;
+        case S:
+            switch (funct3) {
+                case 0b000: str = "sb"; break;
+                case 0b001: str = "sh"; break;
+                case 0b010: str = "sw"; break;
+                default: str = "unknown S-type"; break;
+            }
+            break;
+        case B:
+            switch (funct3) {
+                case 0b000: str = "beq"; break;
+                case 0b001: str = "bne"; break;
+                case 0b100: str = "blt"; break;
+                case 0b101: str = "bge"; break;
+                case 0b110: str = "bltu"; break;
+                case 0b111: str = "bgeu"; break;
+                default: str = "unknown B-type"; break;
+            }
+            break;
+        case JAL: str = "jal"; break;
+        case JALR: str = "jalr"; break;
+        case LUI: str = "lui"; break;
+        case AUIPC: str = "auipc"; break;
+        default: str="invalid instruction";
+    }
+
+    str = "\n" + str + " x" + to_string(rd) + ", x" + to_string(rs1);
+    if (opcode == I) str += ", " + to_string(rs2);
+    else str += ", x" + to_string(rs2);
+    return str;
 }
