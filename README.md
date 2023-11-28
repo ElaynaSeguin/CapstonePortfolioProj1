@@ -1,19 +1,20 @@
 # RISC-V-Simulator
 ## Progress
 
+n/a = no tests available 
 
 | Symbol  | Format                | Description                        | STATUS      |
 | ------- | --------------------- | ---------------------------------- | ----------- |
 | LUI     | `LUI rd,imm`          | Load Upper Immediate               |  |
-| AUIPC   | `AUIPC rd,offset`     | Add Upper Immediate to PC          |  |
+| AUIPC   | `AUIPC rd,offset`     | Add Upper Immediate to PC          | n/a |
 | JAL     | `JAL rd,offset`       | Jump and Link                      |  |
-| JALR    | `JALR rd,rs1,offset`  | Jump and Link Register             |  |
+| JALR    | `JALR rd,rs1,offset`  | Jump and Link Register             | n/a |
 | BEQ     | `BEQ rs1,rs2,offset`  | Branch Equal                       |  |
-| BNE     | `BNE rs1,rs2,offset`  | Branch Not Equal                   |  |
-| BLT     | `BLT rs1,rs2,offset`  | Branch Less Than                   |  |
+| BNE     | `BNE rs1,rs2,offset`  | Branch Not Equal                   | n/a |
+| BLT     | `BLT rs1,rs2,offset`  | Branch Less Than                   | n/a |
 | BGE     | `BGE rs1,rs2,offset`  | Branch Greater than Equal          |  |
-| BLTU    | `BLTU rs1,rs2,offset` | Branch Less Than Unsigned          |  |
-| BGEU    | `BGEU rs1,rs2,offset` | Branch Greater than Equal Unsigned |  |
+| BLTU    | `BLTU rs1,rs2,offset` | Branch Less Than Unsigned          | n/a |
+| BGEU    | `BGEU rs1,rs2,offset` | Branch Greater than Equal Unsigned | n/a |
 | LB      | `LB rd,offset(rs1)`   | Load Byte                          |  |
 | LH      | `LH rd,offset(rs1)`   | Load Half                          |  |
 | LW      | `LW rd,offset(rs1)`   | Load Word                          |  |
