@@ -24,14 +24,14 @@ n/a = no tests available
 | SH      | `SH rs2,offset(rs1)`  | Store Half                         |  |
 | SW      | `SW rs2,offset(rs1)`  | Store Word                         |  |
 | ADDI    | `ADDI rd,rs1,imm`     | Add Immediate                      | done |
-| SLTI    | `SLTI rd,rs1,imm`     | Set Less Than Immediate            |  |
+| SLTI    | `SLTI rd,rs1,imm`     | Set Less Than Immediate            | done |
 | SLTIU   | `SLTIU rd,rs1,imm`    | Set Less Than Immediate Unsigned   |  |
 | XORI    | `XORI rd,rs1,imm`     | Xor Immediate                      | done |
 | ORI     | `ORI rd,rs1,imm`      | Or Immediate                       | done |
 | ANDI    | `ANDI rd,rs1,imm`     | And Immediate                      | done |
-| SLLI    | `SLLI rd,rs1,imm`     | Shift Left Logical Immediate       |  |
-| SRLI    | `SRLI rd,rs1,imm`     | Shift Right Logical Immediate      |  |
-| SRAI    | `SRAI rd,rs1,imm`     | Shift Right Arithmetic Immediate   |  |
+| SLLI    | `SLLI rd,rs1,imm`     | Shift Left Logical Immediate       | done |
+| SRLI    | `SRLI rd,rs1,imm`     | Shift Right Logical Immediate      | done |
+| SRAI    | `SRAI rd,rs1,imm`     | Shift Right Arithmetic Immediate   | done |
 | ADD     | `ADD rd,rs1,rs2`      | Add                                | done |
 | SUB     | `SUB rd,rs1,rs2`      | Subtract                           | done |
 | SLL     | `SLL rd,rs1,rs2`      | Shift Left Logical                 | done |
