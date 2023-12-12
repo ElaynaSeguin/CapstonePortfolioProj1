@@ -15,8 +15,8 @@ cpu::cpu(mem imem,mem dmem)
 
 void cpu::run()
 {
-    // userInput();
 
+        // userInput();
     for (int i = 0; i < imem.getSize(); i++){
         uint8_t opcode = getOpcode(imem.getMem(i));
         switch (opcode)
@@ -119,19 +119,15 @@ uint32_t cpu::get_branch_imm(uint32_t instr)
 {
     uint32_t imm = 0;
     uint32_t imm_0 = 0;
-    uint32_t imm_11 = (instr >> 7) & 0b0000000;
+    uint32_t imm_11 = (instr >> 7) & 0b0000001;
     uint32_t imm_4_1 = (instr >> 8) & 0b00001111;
-    uint32_t imm_10_5 = (instr >> 25) & 0b0000000000000;
-    uint32_t imm_12 = (instr >> 31) & 0b0000000000000000000000000000;
+    uint32_t imm_10_5 = (instr >> 25) & 0b0000000111111;
+    uint32_t imm_12 = (instr >> 31) & 0b0000000001;
 
     // Combine the extracted bits to get the 13-bit immediate
-    imm = imm_0 | imm_11 | imm_4_1 | imm_10_5 | imm_12;
-
-    // add sign extension if imm is negative
-    if ((imm_12 >> 12) != 0){
-        imm = imm | 0xffffe000; 
-    }
-    
+    // imm =  imm_11 | imm_4_1 | imm_10_5 | imm_12;
+    imm = imm_11  | (imm_4_1 << 1) | (imm_10_5 << 5) | (imm_12 << 11);
+  
     return imm;
 }
 int16_t cpu::get_jal_offset(uint32_t instr)
@@ -432,7 +428,43 @@ void cpu::userInput()
   if (c == "r" || c == "c")
   {
     // clockStart();
-
+        for (int i = 0; i < imem.getSize(); i++){
+        uint8_t opcode = getOpcode(imem.getMem(i));
+        switch (opcode)
+        {
+        case R:
+            r_type(imem.getMem(i));
+            PC += 4;
+            break;
+        case I:
+            i_type(imem.getMem(i));
+            PC += 4;
+            break;
+        case S:
+            s_type(imem.getMem(i));
+            PC += 4;
+            break;
+        case L:
+            l_type(imem.getMem(i));
+            PC += 4;
+            break;
+        case B:
+            b_type(imem.getMem(i));
+            break;
+        case JAL:
+            jal(imem.getMem(i));
+            break;
+        case JALR:
+            jalr(imem.getMem(i));
+            break;
+        case LUI:
+            lui(imem.getMem(i));
+            break;
+        case AUIPC:
+            auipc(imem.getMem(i));
+            break;
+        }
+    }
 
 
   }

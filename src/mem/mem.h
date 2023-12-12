@@ -12,7 +12,8 @@ class mem {
 
 public:
     mem();
-    uint32_t getMem(uint32_t addr);
+    uint32_t getMem(uint32_t addr); //assume int value
+    uint32_t getMem2(uint32_t addr); //assume PC value
     uint8_t getMem_byte(uint32_t addr);
     void setMem(uint32_t addr, uint32_t val);
     int getStartPC(); //starting address
