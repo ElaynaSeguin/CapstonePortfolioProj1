@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <stdint.h>
 #include <string.h>
+#include <ctime>
 #include "../mem/mem.cpp"
 #include "../reg/reg.cpp"
 #include "../alu/alu.cpp"
@@ -70,6 +71,15 @@ private:
     const static int8_t SLL = 0b00000001;
     const static int8_t SLT = 0b00000010;
     const static int8_t SLTU = 0b00000011;
+
+    //RUN COMMANDS
+    void writeFile();
+    void displayOptions();
+    void userInput();
+    void clockStart();
+    void clockStop();
+    clock_t timer;
+    int totalTime;
 };
 
 #endif

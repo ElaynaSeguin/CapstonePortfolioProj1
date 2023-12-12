@@ -1,3 +1,4 @@
+//branch instructions for debugging
 bge x6, x0, move_t1(12)
 bge x7, x0, move_t2(12)
 beq x30, x0, rectify_sign(16)
