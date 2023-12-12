@@ -164,7 +164,7 @@ void cpu::r_type(uint32_t instr)
 
     // DEBUG
     cout << stringify(instr)<< endl;
-    // cout << "val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
+    cout << "val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
 }
 void cpu::i_type(uint32_t instr)
 {
