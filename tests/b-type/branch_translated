@@ -1,3 +1,10 @@
+bge x6, x0, move_t1(12)
+bge x7, x0, move_t2(12)
+beq x30, x0, rectify_sign(16)
+bge x5, x0, add_c(8)
+
+////////////////////////////////
+
 lui     x5, 65552          
 addi    x5, x5, 0
 lw x6, 0(x5)
@@ -6,7 +13,7 @@ lui     x5, 65552
 addi    x5, x5, 4
 lw x7, 0(x5)
 
-lui     x5, 65552        
+lui     x5, 65552       
 addi    x5, x5, 8
 lw x28, 0(x5)
 
