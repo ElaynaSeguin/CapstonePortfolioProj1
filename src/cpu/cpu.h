@@ -5,6 +5,7 @@
 #include "../mem/mem.cpp"
 #include "../reg/reg.cpp"
 #include "../alu/alu.cpp"
+// #include "../alu/alu.h"
 
 #ifndef __CPU_H__
 #define __CPU_H__
@@ -12,18 +13,18 @@
 class cpu
 {
 public: // functions called in Main
-    cpu(vector<uint32_t>);
+    cpu(mem,mem);
     void run();
     uint32_t getPC();
     uint32_t getReg(uint8_t index);
     uint32_t getMem(uint32_t addr);
 private:
-    int num;
-    mem mem;
+    mem imem;
+    mem dmem;
     reg reg;
     alu alu;
     uint32_t PC;
-    vector<uint32_t> instr;
+    // vector<uint32_t> instr;
     // OPCODES
     const static uint8_t R = 0b00110011;    
     const static uint8_t I = 0b00010011;   
@@ -42,10 +43,11 @@ private:
     uint8_t getfunct3(uint32_t instr);
     uint8_t getfunct7(uint32_t instr);
     int16_t getimm12(uint32_t instr);
+    int32_t getimm20(uint32_t instr);
     uint32_t get_branch_imm(uint32_t instr);
-    uint32_t get_jal_offset(uint32_t instr);
+    int16_t get_jal_offset(uint32_t instr);
     uint8_t getALU_op(uint32_t instr);
-    string stringify(int32_t line, int8_t rd,int8_t rs1,int16_t rs2);
+    string stringify(int32_t line);
     // EXECUTE
     void r_type(uint32_t instr);
     void i_type(uint32_t instr);

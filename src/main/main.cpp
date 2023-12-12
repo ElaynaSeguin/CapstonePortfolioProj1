@@ -4,10 +4,12 @@
 #include <ctime>
 #include <vector>
 #include <unistd.h>
+#include <string.h>
 #include "../cpu/cpu.cpp"
+#include "../mem/mem.h"
 using namespace std;
 
-vector<uint32_t> readFile();
+void readFile(mem&,string);
 void writeFile();
 void displayOptions();
 void userInput();
@@ -19,13 +21,27 @@ uint32_t breakpoints[5] = {0xFFFFFFFF}; // initialize to FF (never reached)
 
 int main()
 {
-  vector<uint32_t> instructions = readFile(); // LOAD INSTRUCTIONS 
-  cpu cpu(instructions);                      // INTANTIATE & RUN CPU
+  // userInput();  // REQUEST USER INPUT
+  mem imem,dmem;
+  imem.setStartPC(0);
+  dmem.setStartPC(0x10010000);
+  cout << "RISCV SIMULATOR\n";
+  readFile(imem, "imem.dat"); // LOAD INSTRUCTIONS
+  readFile(dmem, "dmem.dat");
+
+  //DEBUG
+  // cout << "IMEM"<<endl;
+  // for (int i = 0; i < 6; i++) 
+  //   cout << bitset<32>(imem.getMem(i)) << endl; 
+  // cout << "DMEM"<<endl;
+  // for (int j = 0; j < 6; j++)
+  //   cout << bitset<32>(dmem.getMem(j)) << endl; 
+  cpu cpu(imem, dmem); // INTANTIATE & RUN CPU
   cpu.run();
+
   // bool cpu_is_running = true;
   // while (true)
   // {
-  // userInput();  // REQUEST USER INPUT
   // clockStart();
   // cpu.fetch();
   // writeFile();
@@ -46,36 +62,33 @@ int main()
 }
 
 // Parse .DAT file
-vector<uint32_t> readFile()
+void readFile(mem& result, string filename)
 {
-  vector<uint32_t> result;
-  // OPEN file
-  string line, input = "input.dat";
-  ifstream file(input);
+  string line;
+  ifstream file(filename);                                  // OPEN file
   if (!file)
     cout << "ERROR. Cannot open file";
   else
   {
-    cout << "RISCV SIMULATOR\n"
-         << "\n~~ Loading instructions ~~\n";
-    // READ file
+    cout << "~~ Loading "<< filename <<" instructions ~~\n";
     string str = "";
     string binary;
-    while (file >> binary)
+    int i = 0;
+    while (file >> binary)                                   // READ file
     {
       str = binary + str;
       if (str.length() == 32)
       {
         uint32_t val = bitset<32>(str).to_ulong(); // Convert string to binary
-        result.push_back(val);                     // save instruction
-        // cout << str << endl;
+        result.setMem(i,val);   // save instruction
+        i++;
+        result.incrSize();
         str.clear();
       }
     }
     file.close();
     cout << "~~ Loading complete ~~\n";
   }
-  return result;
 }
 
 // Write to .ASM file for Debugging

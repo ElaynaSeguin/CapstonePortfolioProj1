@@ -28,28 +28,28 @@ lw t3, 0(t0)
 
 add t4, x0, x0
 # Multiply without mul instruction
-mul_m_x :
+mul_m_x:
 bge t1, x0, move_t1
 sub t5, x0, t1   
 jal x0, check_t2
-move_t1 :
+move_t1:
 add t5, x0, t1  
-check_t2 :
+check_t2:
 bge t2, x0, move_t2
 sub t6, x0, t2  
 jal x0, multiply
-move_t2 :
+move_t2:
 add t6, x0, t2 
-multiply :
+multiply:
 beq t5, x0, rectify_sign
 add t4, t4, t6
 addi t5, t5, -1
 jal x0, multiply
-rectify_sign :
+rectify_sign:
 xor t0, t1, t2
 bge t0, x0, add_c
 sub t4, x0, t4
-add_c :
+add_c:
 add t4, t4, t3
 
 lui     t0,%hi(y)

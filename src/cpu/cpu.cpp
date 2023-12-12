@@ -2,49 +2,52 @@
 #include "cpu.h"
 using namespace std;
 
-cpu::cpu(vector<uint32_t> instr)
+bool debug = true;
+uint8_t x=0;
+
+cpu::cpu(mem imem,mem dmem)
 {
-    this->instr = instr;
+    this->imem = imem;
+    this->dmem = dmem;
     PC = 0;
 }
 
 void cpu::run()
 {
-    for (int i = 0; i < instr.size(); i++)
-    {
-        uint8_t opcode = getOpcode(instr[i]);
+    for (int i = 0; i < imem.getSize(); i++){
+        uint8_t opcode = getOpcode(imem.getMem(i));
         switch (opcode)
         {
         case R:
-            r_type(instr[i]);
+            r_type(imem.getMem(i));
             PC += 4;
             break;
         case I:
-            i_type(instr[i]);
+            i_type(imem.getMem(i));
             PC += 4;
             break;
         case S:
-            s_type(instr[i]);
+            s_type(imem.getMem(i));
             PC += 4;
             break;
         case L:
-            l_type(instr[i]);
+            l_type(imem.getMem(i));
             PC += 4;
             break;
         case B:
-            b_type(instr[i]);
+            b_type(imem.getMem(i));
             break;
         case JAL:
-            jal(instr[i]);
+            jal(imem.getMem(i));
             break;
         case JALR:
-            jalr(instr[i]);
+            jalr(imem.getMem(i));
             break;
         case LUI:
-            lui(instr[i]);
+            lui(imem.getMem(i));
             break;
         case AUIPC:
-            auipc(instr[i]);
+            auipc(imem.getMem(i));
             break;
         }
     }
@@ -61,7 +64,7 @@ uint32_t cpu::getReg(uint8_t index)
 }
 uint32_t cpu::getMem(uint32_t addr)
 {
-    return mem.get_mem(addr);
+    return dmem.getMem(addr);
 }
 
 // DECODE FUNCTIONS
@@ -96,6 +99,10 @@ int16_t cpu::getimm12(uint32_t instr)
         return (val | 0b1111000000000000);  // if (-), sign-extend
     return val;
 }
+int32_t cpu::getimm20(uint32_t instr)
+{
+    return (instr >> 12);
+}
 uint8_t cpu::getALU_op(uint32_t instr)
 {
     uint8_t funct3 = getfunct3(instr);
@@ -124,7 +131,7 @@ uint32_t cpu::get_branch_imm(uint32_t instr)
     
     return imm;
 }
-uint32_t cpu::get_jal_offset(uint32_t instr)
+int16_t cpu::get_jal_offset(uint32_t instr)
 {
     uint32_t offset = 0;
     uint32_t offset_0 = 0;
@@ -140,8 +147,9 @@ uint32_t cpu::get_jal_offset(uint32_t instr)
     if ((offset20 >> 20) != 0){
         offset = offset | 0xfff00000; 
     }
-    return offset;
+    return (uint16_t)offset;
 }
+
 
 void cpu::r_type(uint32_t instr)
 {
@@ -156,8 +164,8 @@ void cpu::r_type(uint32_t instr)
     reg.writeReg(rd, result);                            // write to reg
 
     // DEBUG
-    cout << stringify(instr,rd,rs1,rs2)<< endl;
-    cout << "val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
+    cout << stringify(instr)<< endl;
+    // cout << "val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
 }
 void cpu::i_type(uint32_t instr)
 {
@@ -171,45 +179,60 @@ void cpu::i_type(uint32_t instr)
     if (alu_op == SLL || alu_op == SRL || alu_op == SRA)
         val2 = rs2; // getShamt()
 
-    cout << stringify(instr, rd, rs1, val2) << endl;
+    cout << stringify(instr) << endl;
     int32_t result = alu.calculate(val1, val2, alu_op); // execute
     reg.writeReg(rd, result);                           // write to reg
 
     // DEBUG
-    cout << "val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
+    // cout << "val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
     // cout << "(binary)result:" << bitset<32>(result)<<endl;
     // cout << "register: "<<reg.readReg(rd)<<endl;   //check if stored properly
 }
 void cpu::s_type(uint32_t instr)
 {
+    cout << stringify(instr) << endl;
 }
 void cpu::b_type(uint32_t instr)
 {
+    cout << stringify(instr) << endl;
 }
 void cpu::l_type(uint32_t instr)
 {
+   cout << stringify(instr) << endl; 
 }
 void cpu::jal(uint32_t instr)
 {
+    cout << stringify(instr) << endl;
 }
 void cpu::jalr(uint32_t instr)
 {
+    cout << stringify(instr) << endl;
 }
 void cpu::lui(uint32_t instr)
 {
+    cout << stringify(instr) << endl;
 }
 void cpu::auipc(uint32_t instr)
 {
+    cout << stringify(instr) << endl;
 }
 
 //convert binary to asm string representation
-string cpu::stringify(int32_t instr, int8_t rd,int8_t rs1,int16_t rs2)
+string cpu::stringify(int32_t instr)
 {
     string str="";
     uint8_t opcode = getOpcode(instr);
     uint8_t aluOp = getALU_op(instr);
     uint8_t funct3 = getfunct3(instr);
     uint8_t funct7 = getfunct7(instr);
+    uint16_t imm12 = getimm12(instr);
+    uint16_t _jal = get_jal_offset(instr);
+    uint32_t imm20 = getimm20(instr);
+    uint8_t rs1 = getrs1(instr);
+    uint8_t rs2 = getrs2(instr);
+    uint8_t rd = getrd(instr);
+    uint32_t imm_branch = get_branch_imm(instr);
+
     
     switch(opcode){
         case R:
@@ -265,8 +288,33 @@ string cpu::stringify(int32_t instr, int8_t rd,int8_t rs1,int16_t rs2)
         default: str="invalid instruction";
     }
 
-    str = "\n" + str + " x" + to_string(rd) + ", x" + to_string(rs1);
-    if (opcode == I) str += ", " + to_string(rs2);
-    else str += ", x" + to_string(rs2);
+    switch(opcode){
+        case R:
+        case I:
+            str = "\n" + str + " x" + to_string(rd) + ", x" + to_string(rs1);
+            if (opcode == I) str += ", " + to_string(imm12);
+            else str += ", x" + to_string(rs2);
+            break;
+        case B: 
+            str = "\n" + str + " x" + to_string(rs1) + ", x" + to_string(rs2) + ", label_" + to_string(imm_branch);
+            break;
+        case L:
+        case S: 
+            str = "\n" + str + " x" + to_string(rd) + ", " + to_string(funct7) +"(x" + to_string(rs1) +")";
+            break;
+        case JALR:
+            str = "\n" + str + " x" + to_string(rd) + ", x" + to_string(rs1) + ", " + to_string(imm12) ;
+            break;
+        case JAL:
+            str = "\n" + str + " x" + to_string(rd) +", label_" + to_string(_jal);
+            break;
+        case AUIPC:
+            str = "\n" + str + " x" + to_string(rd) +", label_" + to_string(imm20);
+            break;
+        case LUI:
+            str = "\n" + str + " x" + to_string(rd) + ", " + to_string(imm20);
+            break;
+    }
     return str;
 }
+
