@@ -170,7 +170,7 @@ void cpu::byte(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
     if(loadStore == 1){
         //check here whether signed or unsigned based on function argument param sign (only byte and halfword)
         int32_t memAddr = alu.calculate(sourceReg, bitShift, 0);
-        int8_t memVal8 = mem.get_mem_byte(memAddr);
+        int8_t memVal8 = dmem.getMem_byte(memAddr);
         int32_t memVal;
         //check if signed and left most bit is 1 for negative
         if(sign == 1  && (memVal8 & 0x80)){
@@ -202,7 +202,7 @@ void cpu::halfword(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
     {
         // check here whether signed or unsigned based on function argument param sign (only byte and halfword)
         int32_t memAddr = alu.calculate(sourceReg, bitShift, 0);
-        int16_t memVal16 = mem.get_mem(memAddr);
+        int16_t memVal16 = dmem.getMem(memAddr);
         int32_t memVal;
         //uint32_t memVal = memAddr << 16;
         //uint8_t rd = getrd(instr);
@@ -222,7 +222,7 @@ void cpu::halfword(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
     
     }
 }
-void cpu::word(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
+void cpu::word(uint32_t instr, uint8_t bitShift, int loadStore, int sign)
 {
     // check if string
     // if string,
@@ -235,15 +235,17 @@ void cpu::word(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
         int8_t sourceRegVal = getReg(sourceReg);
         int8_t baseRegVal = getReg(baseReg);
         int32_t memAddr = alu.calculate(baseRegVal, bitShift, 0);
-        imem.setMem(memAddr, sourceRegVal);
+        dmem.setMem(memAddr, sourceRegVal);
         cout <<"result: " <<static_cast<int>(sourceRegVal)<<endl;
 
     }
     if(loadStore == 1){
+        
         //check here whether signed or unsigned based on function argument param sign (only byte and halfword)
         uint8_t rd = getrd(instr);
-        int8_t memAddr = alu.calculate(sourceReg, bitShift, 0);
-        int32_t memVal = imem.getMem(memAddr);
+        int8_t sourceRegVal = getReg(sourceReg);
+        int32_t memAddr = alu.calculate(sourceRegVal, bitShift, 0);
+        int32_t memVal = dmem.getMem(memAddr);
         reg.writeReg(rd, memVal);
         cout <<"result: " <<static_cast<int>(memVal)<<endl;
     }
@@ -256,14 +258,14 @@ void cpu::r_type(uint32_t instr)
     uint8_t rs1 = getrs1(instr);
     int8_t rs2 = getrs2(instr);
 
-    uint16_t val1 = reg.readReg(rs1);                   // read from reg
-    uint16_t val2 = reg.readReg(rs2);
+    uint32_t val1 = reg.readReg(rs1);                   // read from reg
+    uint32_t val2 = reg.readReg(rs2);
     uint32_t result = alu.calculate(val1, val2, alu_op); // execute
     reg.writeReg(rd, result);                            // write to reg
 
     // DEBUG
     cout << stringify(instr)<< endl;
-    // cout << "val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
+     cout << "val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
 }
 void cpu::i_type(uint32_t instr)
 {
@@ -272,8 +274,8 @@ void cpu::i_type(uint32_t instr)
     uint8_t rs1 = getrs1(instr);
     int8_t rs2 = getrs2(instr); // only for shift instructions
 
-    int16_t val1 = reg.readReg(rs1); // read from reg
-    int16_t val2 = getimm12(instr);
+    int32_t val1 = reg.readReg(rs1); // read from reg
+    int32_t val2 = getimm12(instr);
     if (alu_op == SLL || alu_op == SRL || alu_op == SRA)
         val2 = rs2; // getShamt()
 
@@ -282,7 +284,7 @@ void cpu::i_type(uint32_t instr)
     reg.writeReg(rd, result);                           // write to reg
 
     // DEBUG
-    // cout << "val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
+     cout << "val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
     // cout << "(binary)result:" << bitset<32>(result)<<endl;
     // cout << "register: "<<reg.readReg(rd)<<endl;   //check if stored properly
 }
@@ -381,7 +383,8 @@ void cpu::l_type(uint32_t instr)
     uint8_t rd = getrd(instr);
     uint8_t rs1 = getrs1(instr);
     int8_t rs2 = getrs2(instr);
-    uint16_t storeBit = getimm12(instr);
+    //changed here
+    uint8_t storeBit = getimm12(instr);
 
     uint8_t funct3 = getfunct3(instr);
     uint8_t funct7 = getfunct7(instr);

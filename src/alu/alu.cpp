@@ -5,7 +5,7 @@
 class alu
 {
 public:
-    int32_t calculate(int16_t in1, int16_t in2, int8_t op);
+    int32_t calculate(int32_t in1, int32_t in2, int8_t op);
     const static int8_t ADD = 0b00000000; // alu opcodes
     const static int8_t SUB = 0b00100000;
     const static int8_t OR = 0b00000110; 
@@ -18,7 +18,7 @@ public:
     const static int8_t SLTU = 0b00000011;
 };
 
-int32_t alu::calculate(int16_t in1, int16_t in2, int8_t op){
+int32_t alu::calculate(int32_t in1, int32_t in2, int8_t op){
     int32_t out; 
     switch (op) {
         case ADD: out = in1 + in2; break;
