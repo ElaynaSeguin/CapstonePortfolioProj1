@@ -169,7 +169,8 @@ void cpu::byte(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
     }
     if(loadStore == 1){
         //check here whether signed or unsigned based on function argument param sign (only byte and halfword)
-        int32_t memAddr = alu.calculate(sourceReg, bitShift, 0);
+        int8_t sourceRegVal = getReg(sourceReg);
+        int32_t memAddr = alu.calculate(sourceRegVal, bitShift, 0);
         int8_t memVal8 = dmem.getMem_byte(memAddr);
         int32_t memVal;
         //check if signed and left most bit is 1 for negative
@@ -181,6 +182,8 @@ void cpu::byte(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
         }
         uint8_t rd = getrd(instr);
         reg.writeReg(rd, memVal);
+        cout <<"result: " <<static_cast<int>(memVal)<<endl;
+
     }
 }
 void cpu::halfword(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
@@ -201,7 +204,8 @@ void cpu::halfword(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
     if (loadStore == 1)
     {
         // check here whether signed or unsigned based on function argument param sign (only byte and halfword)
-        int32_t memAddr = alu.calculate(sourceReg, bitShift, 0);
+        int8_t sourceRegVal = getReg(sourceReg);
+        int32_t memAddr = alu.calculate(sourceRegVal, bitShift, 0);
         int16_t memVal16 = dmem.getMem(memAddr);
         int32_t memVal;
         //uint32_t memVal = memAddr << 16;
@@ -219,6 +223,8 @@ void cpu::halfword(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
         }
         uint8_t rd = getrd(instr);
         reg.writeReg(rd, memVal);
+        cout <<"result: " <<static_cast<int>(memVal)<<endl;
+
     
     }
 }
@@ -231,11 +237,12 @@ void cpu::word(uint32_t instr, uint8_t bitShift, int loadStore, int sign)
     if (loadStore == 0)
     {
         // store word
-        int8_t baseReg = getrs1(instr);
-        int8_t sourceRegVal = getReg(sourceReg);
-        int8_t baseRegVal = getReg(baseReg);
+        int16_t baseReg = getrs1(instr);
+        int32_t sourceRegVal = getReg(sourceReg);
+        int16_t baseRegVal = getReg(baseReg);
         int32_t memAddr = alu.calculate(baseRegVal, bitShift, 0);
         dmem.setMem(memAddr, sourceRegVal);
+        cout << "result raw: " << sourceRegVal<<endl;
         cout <<"result: " <<static_cast<int>(sourceRegVal)<<endl;
 
     }
@@ -243,7 +250,7 @@ void cpu::word(uint32_t instr, uint8_t bitShift, int loadStore, int sign)
         
         //check here whether signed or unsigned based on function argument param sign (only byte and halfword)
         uint8_t rd = getrd(instr);
-        int8_t sourceRegVal = getReg(sourceReg);
+        int16_t sourceRegVal = getReg(sourceReg);
         int32_t memAddr = alu.calculate(sourceRegVal, bitShift, 0);
         int32_t memVal = dmem.getMem(memAddr);
         reg.writeReg(rd, memVal);
