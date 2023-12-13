@@ -63,10 +63,12 @@ void cpu::run()
     int num;
     uint32_t instr;
 
-//Debug instructions w/out User Options - just 'r'
-// while(keepGoing()){
-//     runInstruction();
-// }
+    for (int i = 0; i < 20; i++)
+    {
+        cout << "dmem[" << i << "]"<<dmem.getMem(i) << endl;
+    }
+    // cout << "dmem[" << i << "]"<<dmem.getMem(i) << endl;
+
 
     while(keepGoing()){
         // checkBreakpt();
@@ -103,10 +105,13 @@ void cpu::run()
             case '0':
                 input = input.substr(2, 8);
                 num = stoi(input);
+                cout << num << endl;
                 if (num < 0x10010000) //imem
                     cout << "0x" << num << " = " << imem.getMem(num) << endl;
-                else if (num > 0x10010000 && num < 0x7fffffff)
-                    cout << "0x" << num << " = " << dmem.getMem(num-dmem.getStartPC()) << endl;
+                else if (num > 0x10010000 && num < 0x7fffffff){
+                    num = num - dmem.getStartPC();
+                    cout << "0x" << num << " = " << dmem.getMem(num) << endl;
+                }
                 break;
             case 'p':
                 cout << "PC = " << PC << endl;
@@ -117,18 +122,28 @@ void cpu::run()
                 cout << "next instruction: " << stringify(instr) << endl;
                 break;
             case 'b':
-                cout << "enter a brekapoint (ex. 0x12345678): ";
-                getline(cin,bk);
-                bk = bk.substr(2,8);
+                 bk = input.substr(2,1+bk.length());
                 num = stoi(bk);
+                if (num % 4 != 0) {
+                    cout << "invalid address" << endl;
+                    break;
+                }
                 for (int i = 0; i < 5; i++)
                 {
-                    if(breakpoints[i]!=0) //assume no breakpt in 1st line
+                    if(breakpoints[i]==0) {
+                // cout << "testing3" << endl;
                         breakpoints[i]=num;
+                        // cout << breakpoints[i] << endl;
+                        break;
+                    } //assume no breakpt in 1st line
                 }
                 break;
             case 'v': //hidden function 
                 displayReg();
+                break;
+            case 'm':
+                for (int i = 0; i < 20; i++)
+                    cout << "dmem[" << i << "]"<<dmem.getMem(i) << endl;
                 break;
             default:
                 cout << "invalid input" << endl;
@@ -233,21 +248,24 @@ int16_t cpu::get_jal_offset(uint32_t instr)
     return (uint16_t)offset;
 }
 
+
 void cpu::byte(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
 {
     uint8_t sourceReg = getrs2(instr);
 
     if (loadStore == 0)
-    {
+    {   
+        int16_t imm = getimm12(instr); 
         int8_t baseReg = getrs1(instr);
-        int8_t sourceRegVal = getReg(sourceReg);
-        int32_t shiftSourceVal = sourceRegVal >> 24;
+        int16_t sourceRegVal = getReg(sourceReg);
+        int32_t shiftSourceVal = (sourceRegVal & 0b00000000000000000000000011111111);
+        //>> 24;
         int8_t baseRegVal = getReg(baseReg);
-        int32_t memAddr = alu.calculate(baseRegVal, bitShift, 0);
+        int32_t memAddr = alu.calculate(baseRegVal, imm, 0);
         imem.setMem(memAddr, shiftSourceVal);
         cout <<"result: " <<shiftSourceVal<<endl;
     }
-if(loadStore == 1){
+     if(loadStore == 1){
         //check here whether signed or unsigned based on function argument param sign (only byte and halfword)
         int8_t baseReg = getrs1(instr);
         int8_t rd = getrd(instr);
@@ -255,21 +273,24 @@ if(loadStore == 1){
         int32_t baseAddr = getReg(baseReg);
         int32_t memAddr = alu.calculate(baseAddr, imm, 0);
         cout << "Mem Address: " << memAddr << endl;
-        int16_t memVal8 = dmem.getMem_byte(memAddr);
+        int8_t memVal8 = dmem.getMem_byte(memAddr-dmem.getStartPC());
+        cout << "Get start" << dmem.getStartPC() << endl;
+        cout << "Dmem function: " << dmem.getMem_byte(memAddr-dmem.getStartPC());
         int32_t memVal;
 
     cout << "Base Address: " << baseAddr << endl;
     cout << "Immediate Value: " << imm << endl;
     cout << "Calculated Mem Address: " << memAddr << endl;
+    cout << "Calculated Mem Value (memval8): " << memVal8 << endl;
         //check if signed and left most bit is 1 for negative
         //if(sign == 1  && (memVal8 & 0x80)){
-        if(((memVal8 & 0b10000000) >> 7 ) == 1){
+        if((((memVal8 & 0b10000000) >> 7 ) == 1)&& sign == 0){
             memVal = 0xffffff00 | memVal8;
             } else{
                 cout << "not negative" << endl;
                 memVal = (uint32_t) memVal8;
             }
-        cout << "Calculated Mem Value (memval8): " << memVal8 << endl;
+        
         cout << "Calculated Mem Value (memval): " << memVal << endl;
         reg.writeReg(rd, memVal);
         cout <<"result: " <<memVal<<endl;

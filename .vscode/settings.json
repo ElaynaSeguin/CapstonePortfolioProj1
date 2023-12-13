@@ -5,6 +5,7 @@
         "branch_translated": "cpp",
         "istream": "cpp",
         "ostream": "cpp",
-        "ios": "cpp"
+        "ios": "cpp",
+        "ratio": "cpp"
     }
 }
