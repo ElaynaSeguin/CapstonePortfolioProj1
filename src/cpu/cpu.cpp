@@ -20,7 +20,7 @@ void cpu::runInstruction(){
     uint32_t instr = imem.getMem(addr);
     string str = stringify(instr);// << endl;
     // cout << str;// << endl;
-    // writeFile(str);
+    writeFile(str);
     uint8_t opcode = getOpcode(instr);
     switch(opcode) {
         case R: r_type(instr); PC += 4; break;
@@ -51,6 +51,30 @@ void cpu::displayReg(){
     cout << setfill('-') << setw(columnWidth * 2) << "" << setfill(' ') << endl;
     for (int i = 0; i < 32; i++) 
         cout << left << setw(columnWidth) << "x" + to_string(i) << setw(columnWidth) << reg.readReg(i) << endl;
+        
+        // cout << left << setw(columnWidth) << "x" + to_string(i) << setw(columnWidth) << "0x" << setw(8) << setfill('0') << hex << reg.readReg(i) << endl;
+
+
+
+    // const int columnWidth = 18; // Adjusted width to accommodate 32 bits
+    // // Header
+    // std::cout << std::endl << std::setfill('-') << std::setw(columnWidth * 2) << "" << std::setfill(' ') << std::endl;
+    // std::cout << std::left << std::setw(columnWidth) << "Register" << std::setw(columnWidth) << "Value" << std::endl;
+    // std::cout << std::setfill('-') << std::setw(columnWidth * 2) << "" << std::setfill(' ') << std::endl;
+
+    // // Data
+    // for (int i = 0; i < 32; i++) {
+    //     std::cout << std::left << std::setw(columnWidth) << "x" + std::to_string(i)
+    //               << std::setw(columnWidth) << "0x" << std::right << std::setw(10) << std::setfill('0') << std::hex << reg.readReg(i)
+    //               << std::setfill(' ') << std::dec << std::endl;
+    // }
+
+
+
+    
+    // cout << "0x" << setw(8) << setfill('0') << hex << reg.readReg(num) << endl;
+    
+    //display time at end
     cout << endl << "--------------------" << endl;
     cout << " Total time: " << totalTime/1000.0 << "s" 
          << endl <<"--------------------" << endl << endl;
@@ -100,7 +124,10 @@ void cpu::run()
             case 'x':
                 input = input.substr(1, 2);
                 num = stoi(input);
-                cout << "x" << num << " = " << reg.readReg(num) <<endl;
+                cout << "x" << dec << num << " = " ;
+                // cout << hex <<reg.readReg(num) <<endl;
+                cout << "0x" << setw(8) << setfill('0') << hex << reg.readReg(num) << endl;
+
                 break;
             case '0':
                 input = input.substr(2, 8);
@@ -117,12 +144,12 @@ void cpu::run()
                 cout << "PC = " << PC << endl;
                 break;
             case 'i':
-                num = PC/4+4;
+                num = PC/4;
                 instr = imem.getMem(num);
-                cout << "next instruction: " << stringify(instr) << endl;
+                cout << stringify(instr) << endl;
                 break;
             case 'b':
-                bk = input.substr(2,1+bk.length());
+                bk = input.substr(2,2+input.length());
                 num = stoi(bk);
                 if (num % 4 != 0) {
                     cout << "invalid address" << endl;
@@ -296,37 +323,23 @@ void cpu::byte(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
         imem.setMem(memAddr, shiftSourceVal);
         // cout <<"result: " <<shiftSourceVal<<endl;
     }
-     if(loadStore == 1){
+
+    if(loadStore == 1){
         //check here whether signed or unsigned based on function argument param sign (only byte and halfword)
-        int8_t baseReg = getrs1(instr);
-        int8_t rd = getrd(instr);
-        int32_t imm = getimm12(instr);
-        int32_t baseAddr = getReg(baseReg);
-        int32_t memAddr = alu.calculate(baseAddr, imm, 0);
-        cout << "Mem Address: " << memAddr << endl;
-        int8_t memVal8 = dmem.getMem_byte(memAddr-dmem.getStartPC());
-        cout << "Get start" << dmem.getStartPC() << endl;
-        cout << "Dmem function: " << dmem.getMem_byte(memAddr-dmem.getStartPC());
-        int32_t memVal;
-
-    // cout << "Base Address: " << baseAddr << endl;
-    // cout << "Immediate Value: " << imm << endl;
-    // cout << "Calculated Mem Address: " << memAddr << endl;
-    // cout << "Calculated Mem Value (memval8): " << memVal8 << endl;
+        uint32_t memAddr = alu.calculate(sourceReg, bitShift, 0);
+        uint8_t memVal8 = dmem.getMem_byte(memAddr);
+        uint32_t memVal;
         //check if signed and left most bit is 1 for negative
-        //if(sign == 1  && (memVal8 & 0x80)){
-        if((((memVal8 & 0b10000000) >> 7 ) == 1)&& sign == 0){
-            memVal = 0xffffff00 | memVal8;
-            } else{
-                cout << "not negative" << endl;
-                memVal = (uint32_t) memVal8;
-            }
-        
-        cout << "Calculated Mem Value (memval): " << memVal << endl;
+        if(sign == 1  && (memVal8 & 0x80)){
+            memVal = (uint32_t)(uint32_t (memAddr) << 24);
+        }
+        else{
+            memVal = memAddr << 24;
+        }
+        uint8_t rd = getrd(instr);
         reg.writeReg(rd, memVal);
-        // cout <<"result: " <<memVal<<endl;
-
     }
+
 }
 void cpu::halfword(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
 {
@@ -595,7 +608,7 @@ void cpu::lui(uint32_t instr)
     uint32_t imm = getimm20(instr);
     uint32_t result = imm << 12;
     reg.writeReg(rd, result);
-    cout << " result:" << result << endl;
+    // cout << " result:" << result << endl;
 }
 void cpu::auipc(uint32_t instr)
 {
@@ -603,7 +616,7 @@ void cpu::auipc(uint32_t instr)
     uint32_t imm = getimm20(instr);
     uint32_t result = PC + (imm << 12);
     reg.writeReg(rd, result);
-    cout << " result:" << result << endl;
+    // cout << " result:" << result << endl;
 }
 
 //convert binary to asm string representation
