@@ -2,7 +2,7 @@
 ### Division of Work
 Lani: i-type instructions, User Menu 
 
-Lana: load, store instructions
+Elayna: load, store instructions
 
 Martin: r-type, u-type instructions
 
