@@ -82,7 +82,7 @@ private:
     const static int8_t SLTU = 0b00000011;
 
     //RUN COMMANDS
-    void writeFile();
+    void writeFile(string);
     void displayOptions();
     string userInput();
     void clockStart();

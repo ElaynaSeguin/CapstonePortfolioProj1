@@ -30,26 +30,6 @@ int main()
   //   cout << bitset<32>(dmem.getMem(j)) << endl; 
   cpu cpu(imem, dmem); // INTANTIATE & RUN CPU
   cpu.run();
-
-  // bool cpu_is_running = true;
-  // while (true)
-  // {
-  // clockStart();
-  // cpu.fetch();
-  // writeFile();
-  // cpu.execute();
-  // clockStop();
-  // if (cpu.getPC() == 0) //check if end
-  //     break;
-  // }
-
-  // DISPLAY TIME
-  // cout << "\nTotal Time:" << totalTime;
-  // clockStart();
-  // sleep(10);
-  // clockStop();
-  // cout << fixed << "\nTotal Time:" << (float)totalTime / CLOCKS_PER_SEC << " sec" << scientific;
-
   return 0;
 }
 

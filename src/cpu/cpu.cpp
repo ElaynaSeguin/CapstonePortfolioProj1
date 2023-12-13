@@ -18,7 +18,9 @@ cpu::cpu(mem imem,mem dmem)
 void cpu::runInstruction(){
     int addr = PC/4;
     uint32_t instr = imem.getMem(addr);
-    cout << stringify(instr);// << endl;
+    string str = stringify(instr);// << endl;
+    cout << str;// << endl;
+    // writeFile(str);
     uint8_t opcode = getOpcode(instr);
     switch(opcode) {
         case R: r_type(instr); PC += 4; break;
@@ -89,7 +91,10 @@ void cpu::run()
             case '0':
                 input = input.substr(2, 8);
                 num = stoi(input);
-                cout << "0x" << num << " = " << imem.getMem(num) << endl;
+                if (num < 0x10010000) //imem
+                    cout << "0x" << num << " = " << imem.getMem(num) << endl;
+                else if (num > 0x10010000 && num < 0x7fffffff)
+                    cout << "0x" << num << " = " << dmem.getMem(num-dmem.getStartPC()) << endl;
                 break;
             case 'p':
                 cout << "PC = " << PC << endl;
@@ -320,7 +325,7 @@ void cpu::word(uint32_t instr, uint8_t bitShift, int loadStore, int sign)
         int32_t sourceRegVal = getReg(sourceReg);
         int16_t baseRegVal = getReg(baseReg);
         int32_t memAddr = alu.calculate(baseRegVal, bitShift, 0);
-        dmem.setMem(memAddr, sourceRegVal);
+        dmem.setMem(memAddr/4, sourceRegVal);
         cout << endl<<"result raw: " << sourceRegVal<<endl;
         cout <<"result: " <<static_cast<int>(sourceRegVal)<<endl;
 
@@ -331,7 +336,7 @@ void cpu::word(uint32_t instr, uint8_t bitShift, int loadStore, int sign)
         uint8_t rd = getrd(instr);
         int16_t sourceRegVal = getReg(sourceReg);
         int32_t memAddr = alu.calculate(sourceRegVal, bitShift, 0);
-        int32_t memVal = dmem.getMem(memAddr);
+        int32_t memVal = dmem.getMem(memAddr/4);
         reg.writeReg(rd, memVal);
         cout <<endl<<"result: " <<static_cast<int>(memVal)<<endl;
     }
@@ -651,19 +656,16 @@ string cpu::stringify(int32_t instr)
 //RUN COMMANDS
 
 // Write to .ASM file for Debugging
-void cpu::writeFile()
+void cpu::writeFile(string str)
 {
-  string output = "test.asm";
+  string output = "output.asm";
   ofstream file(output, ios::app); // append
   if (!file)
   {
     cout << "ERROR. Cannot open file";
     return;
   }
-
-  // get translated instruction from CPU.decode() ???
-  // file << cpu.getAsmInstruction() << endl;
-  file << "TESTING OUTPUT" << endl;
+    file << str << endl;
   file.close();
 }
 
@@ -691,7 +693,7 @@ void cpu::displayOptions()
        << endl
        << "0x12345678 - view content at this address"
        << endl
-       << "pc    - viewb  PC value"
+       << "pc    - view  PC value"
        << endl
        << "insn  - view next instruction"
        << endl
