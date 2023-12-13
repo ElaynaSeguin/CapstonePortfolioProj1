@@ -13,7 +13,6 @@ void readFile(mem&,string);
 
 int main()
 {
-  // userInput();  // REQUEST USER INPUT
   mem imem,dmem;
   imem.setStartPC(0);
   dmem.setStartPC(0x10010000);
