@@ -20,7 +20,7 @@ void cpu::runInstruction(){
     uint32_t instr = imem.getMem(addr);
     string str = stringify(instr);// << endl;
     // cout << str;// << endl;
-    writeFile(str);
+    // writeFile(str);
     uint8_t opcode = getOpcode(instr);
     switch(opcode) {
         case R: r_type(instr); PC += 4; break;
@@ -122,7 +122,7 @@ void cpu::run()
                 cout << "next instruction: " << stringify(instr) << endl;
                 break;
             case 'b':
-                 bk = input.substr(2,1+bk.length());
+                bk = input.substr(2,1+bk.length());
                 num = stoi(bk);
                 if (num % 4 != 0) {
                     cout << "invalid address" << endl;
@@ -175,12 +175,12 @@ void cpu::run()
     int j=0;
     while(j < 13)
     {
-        cout << "0x000000" << hex<<j+imem.getStartPC() << ":  "<<bitset<32>(imem.getMem(j)) << endl;
+        cout << "0x0000000" << hex<<j+imem.getStartPC() << ":  "<<bitset<32>(imem.getMem(j)) << endl;
         j+=4;
     }
     while(j >=10 && j < 60)
     {
-        cout << "0x00000" << hex<<j+imem.getStartPC() << ":  "<<bitset<32>(imem.getMem(j)) << endl;
+        cout << "0x000000" << hex<<j+imem.getStartPC() << ":  "<<bitset<32>(imem.getMem(j)) << endl;
         j+=4;
     }
     
@@ -324,7 +324,7 @@ void cpu::byte(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
         
         cout << "Calculated Mem Value (memval): " << memVal << endl;
         reg.writeReg(rd, memVal);
-        cout <<"result: " <<memVal<<endl;
+        // cout <<"result: " <<memVal<<endl;
 
     }
 }
@@ -340,7 +340,7 @@ void cpu::halfword(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
         int8_t baseRegVal = getReg(baseReg);
         int32_t memAddr = alu.calculate(baseRegVal, bitShift, 0);
         imem.setMem(memAddr, shiftSourceVal);
-        cout <<"result: " <<shiftSourceVal<<endl;
+        // cout <<"result: " <<shiftSourceVal<<endl;
 
     }
     if (loadStore == 1)
@@ -365,7 +365,7 @@ void cpu::halfword(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
         }
         uint8_t rd = getrd(instr);
         reg.writeReg(rd, memVal);
-        cout <<"result: " <<static_cast<int>(memVal)<<endl;
+        // cout <<"result: " <<static_cast<int>(memVal)<<endl;
 
     
     }
