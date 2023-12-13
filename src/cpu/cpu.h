@@ -25,6 +25,7 @@ private:
     reg reg;
     alu alu;
     uint32_t PC;
+    bool running;
     // vector<uint32_t> instr;
     // OPCODES
     const static uint8_t R = 0b00110011;    
@@ -59,6 +60,11 @@ private:
     void jalr(uint32_t instr);
     void lui(uint32_t instr);
     void auipc(uint32_t instr);
+    
+    //LOAD-STORE HELPER 
+    void byte(uint32_t instr, uint16_t immBit, int loadStore, int sign = 1);
+    void halfword(uint32_t instr, uint16_t immBit, int loadStore, int sign = 1);
+    void word(uint32_t instr, uint16_t immBit, int loadStore, int sign = 1);
 
     //DELETE, issue with #include alu.h
     const static int8_t ADD = 0b00000000; // alu opcodes

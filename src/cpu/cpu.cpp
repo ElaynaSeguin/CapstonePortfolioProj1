@@ -9,6 +9,7 @@ cpu::cpu(mem imem,mem dmem)
 {
     this->imem = imem;
     this->dmem = dmem;
+    running = true;
     PC = 0;
     totalTime=0;
 }
@@ -16,41 +17,44 @@ cpu::cpu(mem imem,mem dmem)
 void cpu::run()
 {
 
-        // userInput();
+        userInput();
     for (int i = 0; i < imem.getSize(); i++){
-        uint8_t opcode = getOpcode(imem.getMem(i));
+        int addr = PC/4;
+        uint8_t opcode = getOpcode(imem.getMem(addr));
         switch (opcode)
         {
         case R:
-            r_type(imem.getMem(i));
+            r_type(imem.getMem(addr));
             PC += 4;
             break;
         case I:
-            i_type(imem.getMem(i));
+            i_type(imem.getMem(addr));
             PC += 4;
             break;
         case S:
-            s_type(imem.getMem(i));
+            s_type(imem.getMem(addr));
             PC += 4;
             break;
         case L:
-            l_type(imem.getMem(i));
+            l_type(imem.getMem(addr));
             PC += 4;
             break;
         case B:
-            b_type(imem.getMem(i));
+            b_type(imem.getMem(addr));
             break;
         case JAL:
-            jal(imem.getMem(i));
+            jal(imem.getMem(addr));
             break;
         case JALR:
-            jalr(imem.getMem(i));
+            jalr(imem.getMem(addr));
             break;
         case LUI:
-            lui(imem.getMem(i));
+            lui(imem.getMem(addr));
+            PC += 4;
             break;
         case AUIPC:
-            auipc(imem.getMem(i));
+            auipc(imem.getMem(addr));
+            PC += 4;
             break;
         }
     }
@@ -149,6 +153,67 @@ int16_t cpu::get_jal_offset(uint32_t instr)
     return (uint16_t)offset;
 }
 
+void cpu::byte(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
+{
+    uint8_t sourceReg = getrs1(instr);
+
+    if (loadStore == 0)
+    {
+        uint8_t baseReg = getrs2(instr);
+        uint8_t sourceRegVal = getReg(sourceReg);
+        uint32_t shiftSourceVal = sourceRegVal >> 24;
+        uint8_t baseRegVal = getReg(baseReg);
+        uint32_t memAddr = alu.calculate(baseRegVal, bitShift, 0);
+        imem.setMem(memAddr, shiftSourceVal);
+        cout <<"result: " <<shiftSourceVal<<endl;
+    }
+    if (loadStore == 1)
+    {
+        // check here whether signed or unsigned based on function argument param sign (only byte and halfword)
+    }
+}
+void cpu::halfword(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
+{
+    uint8_t sourceReg = getrs1(instr);
+
+    if (loadStore == 0)
+    {
+        uint8_t baseReg = getrs2(instr);
+        uint8_t sourceRegVal = getReg(sourceReg);
+        uint32_t shiftSourceVal = sourceRegVal >> 16;
+        uint8_t baseRegVal = getReg(baseReg);
+        uint32_t memAddr = alu.calculate(baseRegVal, bitShift, 0);
+        imem.setMem(memAddr, shiftSourceVal);
+        cout <<"result: " <<shiftSourceVal<<endl;
+
+    }
+    if (loadStore == 1)
+    {
+        // check here whether signed or unsigned based on function argument param sign (only byte and halfword)
+    }
+}
+void cpu::word(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
+{
+    // check if string
+    // if string,
+    uint8_t sourceReg = getrs1(instr);
+
+    if (loadStore == 0)
+    {
+        // store word
+        uint8_t baseReg = getrs2(instr);
+        uint8_t sourceRegVal = getReg(sourceReg);
+        uint8_t baseRegVal = getReg(baseReg);
+        uint32_t memAddr = alu.calculate(baseRegVal, bitShift, 0);
+        imem.setMem(memAddr, sourceRegVal);
+        cout <<"result: " <<sourceRegVal<<endl;
+
+    }
+    if (loadStore == 1)
+    {
+        // check here whether signed or unsigned based on function argument param sign (only byte and halfword)
+    }
+}
 
 void cpu::r_type(uint32_t instr)
 {
@@ -164,7 +229,7 @@ void cpu::r_type(uint32_t instr)
 
     // DEBUG
     cout << stringify(instr)<< endl;
-    cout << "val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
+    // cout << "val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
 }
 void cpu::i_type(uint32_t instr)
 {
@@ -190,6 +255,44 @@ void cpu::i_type(uint32_t instr)
 void cpu::s_type(uint32_t instr)
 {
     cout << stringify(instr) << endl;
+    //following S-format
+    // imm[11:5] || rs2 || rs1 || function3 || imm[4:0] || opcode
+    // 7 bits || 5 bits || 5 bits || 3 bits || 5 bits || 7 bits
+    int storeLoad = 0;
+    uint8_t rd = getrd(instr);
+    uint8_t rs1 = getrs1(instr);
+    int8_t rs2 = getrs2(instr);
+
+    uint8_t funct3 = getfunct3(instr);
+    uint8_t funct7 = getfunct7(instr);
+
+    //get 16 bit per RISC-V architecture by shifting funct 7 by 5 bits and combine with rd
+    uint16_t storeBit = (((uint16_t) funct7) << 5) | (uint16_t) rd;
+    //pass destination register or function7
+    //function 3, (same as load) determines size
+
+    //pass instruction, immediate, and loadStore value
+    //loadStore will be 0 for store and 1 for load
+    //and can pass opcode (however, opcode should always be 0 for load and store)
+    
+    switch(funct3){
+        case 0b000:
+            //pass to byte function w/ '0', key for store
+            byte(instr, storeBit, storeLoad);
+            break;
+        case 0b001:
+            //pass to halfword function w/ '0', key for store
+            halfword(instr, storeBit, storeLoad);
+            break;
+        case 0b0101:
+            //pass to word function w/ '0', key for store
+            word(instr, storeBit, storeLoad);
+            break;
+        default:
+            //not store byte, halfword, or word
+            break;
+
+    }
 }
 void cpu::b_type(uint32_t instr)
 {
@@ -237,7 +340,45 @@ void cpu::b_type(uint32_t instr)
 void cpu::l_type(uint32_t instr)
 {
    cout << stringify(instr) << endl; 
+ //following L-format
+    // imm[11:0] || rs1 || function3 || rd || opcode
+    // 12 bits || 5 bits || 3 bits || 5 bits || 7 bits
+    int storeLoad = 1;
+    uint8_t rd = getrd(instr);
+    uint8_t rs1 = getrs1(instr);
+    int8_t rs2 = getrs2(instr);
+    uint16_t storeBit = getimm12(instr);
+
+    uint8_t funct3 = getfunct3(instr);
+    uint8_t funct7 = getfunct7(instr);
+    //getimm12
+
+    if(funct3 == 0b000 || funct3 == 0b100){
+            //pass to byte function w/ '1', key for load
+            //byte(instr, storeBit, storeLoad);
+            int sign = 1;
+            if(funct3 == 0b100){
+                sign = 0;
+            }
+            byte(instr, storeBit, storeLoad, sign);
+    }
+    if(funct3 == 0b001 || funct3 == 0b101){
+            //pass to halfword function w/ '1', key for load
+            //halfword(instr, storeBit, storeLoad);
+            int sign = 1;
+            if(funct3 == 0b101){
+                sign = 0;
+            }
+            halfword(instr, storeBit, storeLoad);
+    }
+
+    if(funct3 == 0b010){
+            //pass to word w/ '1', key for load
+            //word(instr, storeBit, storeLoad);
+            word(instr, storeBit, storeLoad);
+    }
 }
+
 void cpu::jal(uint32_t instr)
 {
     cout << stringify(instr) << endl;
@@ -249,10 +390,20 @@ void cpu::jalr(uint32_t instr)
 void cpu::lui(uint32_t instr)
 {
     cout << stringify(instr) << endl;
+    uint8_t rd = getrd(instr);
+    uint32_t imm = getimm20(instr);
+    uint32_t result = imm << 12;
+    reg.writeReg(rd, result);
+    cout << result;
 }
 void cpu::auipc(uint32_t instr)
 {
     cout << stringify(instr) << endl;
+    uint8_t rd = getrd(instr);
+    uint32_t imm = getimm20(instr);
+    uint32_t result = PC + (imm << 12);
+    reg.writeReg(rd, result);
+    cout << " result:" << result << endl;
 }
 
 //convert binary to asm string representation
@@ -410,22 +561,24 @@ void cpu::displayOptions()
 
 void cpu::userInput()
 {
+    // clock_t timer;
+  uint32_t breakpoints[5] = {0xFFFFFFFF};
+  int num;
   string input = " ";
   displayOptions();
   cout << "\n\nEnter a command: ";
   getline(cin, input);
-    // clock_t timer;
-  uint32_t breakpoints[5] = {0xFFFFFFFF};
+  cout << endl << input;
 
   // Remove all whitespaces from input
-  input.erase(remove_if(input.begin(), input.end(), ::isspace), input.end());
-  string c = input.substr(0, 1);
-  int num;
+//   input.erase(remove_if(input.begin(), input.end(), ::isspace), input.end());
+//   string input;// = input.substr(0, 1);
+//   cin >> c;
 
   // VALIDATE INPUT
   //  run - execute all
   //  c - continue
-  if (c == "r" || c == "c")
+  if (input == "r" || input == "c")
   {
     // clockStart();
         for (int i = 0; i < imem.getSize(); i++){
@@ -469,14 +622,14 @@ void cpu::userInput()
 
   }
   // s - step through
-  else if (c == "s")
+  else if (input == "s")
   {
   }
   // x0 - x31
-  else if (c == "x")
+  else if (input == "x")
   {
-    c = input.substr(1, 2);
-    num = stoi(c);
+    input = input.substr(1, 2);
+    num = stoi(input);
     if (num > 31)
       cout << "Invalid input\n";
     // else{
@@ -484,14 +637,14 @@ void cpu::userInput()
     // }
   }
   // 0x12345678 - return val at address
-  else if (c == "0")
+  else if (input == "0")
   {
-    c = input.substr(2, 8);
-    num = stoi(c);
+    input = input.substr(2, 8);
+    num = stoi(input);
     // cout << CPU.getMem(num);
   }
   // pc - return PC
-  else if (c == "p")
+  else if (input == "p")
   {
     if (input != "pc")
       cout << "Invalid input\n";
@@ -500,7 +653,7 @@ void cpu::userInput()
     // }
   }
   // insn - return NEXT asm instruction
-  else if (c == "i")
+  else if (input == "i")
   {
     if (input != "insn")
       cout << "Invalid input\n";
@@ -509,10 +662,10 @@ void cpu::userInput()
     // }
   }
   // b[pc] - add breakpoint     assume format -> b[0x12345678]
-  else if (c == "b")
+  else if (input == "b")
   {
-    c = input.substr(4, 8);
-    num = stoi(c);
+    input = input.substr(4, 8);
+    num = stoi(input);
     // ASSUME SORTED IN-ORDER....
     for (int i = 0; i < 5; i++)
     { // check is breakpoints[] is full
