@@ -49,15 +49,16 @@ void cpu::run()
     int num;
     uint32_t instr;
 
-    while(keepGoing()){
+while(keepGoing()){
+    runInstruction();
+}
+
+    while(false){
         // checkBreakpt();
         input = userInput();
         ch = input[0];
         switch(ch){
             case 'r':
-                // cout << noBreakpt << " "<< keepGoing() << endl;
-                // cout << "input check:";
-                // cin >> bk;
                 clockStart();
                 while(noBreakpt && keepGoing()){
                     runInstruction();
@@ -67,19 +68,22 @@ void cpu::run()
                 break;
             case 'c':
                 do{
+                    clockStart();
                     runInstruction();
                     noBreakpt=checkBreakpt();
                 }
-                while(noBreakpt);
-                    
+                while(noBreakpt && keepGoing());
+                clockStop();
                 break;
             case 's':
+                // clockStart();
                 runInstruction();
+                // clockStop();
                 break;
             case 'x':
                 input = input.substr(1, 2);
                 num = stoi(input);
-                cout << " x" << num << " - " << reg.readReg(num) <<endl;
+                cout << "x" << num << " = " << reg.readReg(num) <<endl;
                 break;
             case '0':
                 input = input.substr(2, 8);
@@ -231,22 +235,32 @@ void cpu::byte(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
         imem.setMem(memAddr, shiftSourceVal);
         cout <<"result: " <<shiftSourceVal<<endl;
     }
-    if(loadStore == 1){
+if(loadStore == 1){
         //check here whether signed or unsigned based on function argument param sign (only byte and halfword)
-        int8_t sourceRegVal = getReg(sourceReg);
-        int32_t memAddr = alu.calculate(sourceRegVal, bitShift, 0);
-        int8_t memVal8 = dmem.getMem_byte(memAddr);
+        int8_t baseReg = getrs1(instr);
+        int8_t rd = getrd(instr);
+        int32_t imm = getimm12(instr);
+        int32_t baseAddr = getReg(baseReg);
+        int32_t memAddr = alu.calculate(baseAddr, imm, 0);
+        cout << "Mem Address: " << memAddr << endl;
+        int16_t memVal8 = dmem.getMem_byte(memAddr);
         int32_t memVal;
+
+    cout << "Base Address: " << baseAddr << endl;
+    cout << "Immediate Value: " << imm << endl;
+    cout << "Calculated Mem Address: " << memAddr << endl;
         //check if signed and left most bit is 1 for negative
-        if(sign == 1  && (memVal8 & 0x80)){
-            memVal = (uint32_t)(uint32_t (memAddr) << 24);
-        }
-        else{
-            memVal = memAddr << 24;
-        }
-        uint8_t rd = getrd(instr);
+        //if(sign == 1  && (memVal8 & 0x80)){
+        if(((memVal8 & 0b10000000) >> 7 ) == 1){
+            memVal = 0xffffff00 | memVal8;
+            } else{
+                cout << "not negative" << endl;
+                memVal = (uint32_t) memVal8;
+            }
+        cout << "Calculated Mem Value (memval8): " << memVal8 << endl;
+        cout << "Calculated Mem Value (memval): " << memVal << endl;
         reg.writeReg(rd, memVal);
-        cout <<"result: " <<static_cast<int>(memVal)<<endl;
+        cout <<"result: " <<memVal<<endl;
 
     }
 }
@@ -439,6 +453,9 @@ void cpu::b_type(uint32_t instr)
     } else {
         PC += 4; // Jump to next instruction
     }
+    
+    //console output
+    cout << endl;
 }
 void cpu::l_type(uint32_t instr)
 {

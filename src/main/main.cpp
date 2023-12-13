@@ -73,9 +73,9 @@ void readFile(mem& result, string filename)
       {
         uint32_t val = bitset<32>(str).to_ulong(); // Convert string to binary
         if(val!=0){
-        result.setMem(i,val);   // save instruction
-        i++;
-        result.incrSize();
+          result.setMem(i,val);   // save instruction
+          i++;
+          result.incrSize();
         }
         str.clear();
       }
