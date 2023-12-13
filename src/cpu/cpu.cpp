@@ -49,11 +49,12 @@ void cpu::run()
     int num;
     uint32_t instr;
 
-while(keepGoing()){
-    runInstruction();
-}
+//Debug instructions w/out User Options - just 'r'
+// while(keepGoing()){
+//     runInstruction();
+// }
 
-    while(false){
+    while(keepGoing()){
         // checkBreakpt();
         input = userInput();
         ch = input[0];
@@ -502,10 +503,9 @@ void cpu::l_type(uint32_t instr)
 
 void cpu::jal(uint32_t instr)
 {
-    uint32_t PC = getPC();
     uint8_t rd = getrd(instr);
     uint32_t offset = get_jal_offset(instr);
-    uint32_t result = PC + 4;
+    uint32_t result = PC + offset;
     reg.writeReg(rd, result);
     PC += offset;
 }
