@@ -1,10 +1,15 @@
 # RISC-V-Simulator
 ### Division of Work
 Lani: i-type instructions, User Menu 
+
 Lana: load, store instructions
+
 Martin: r-type, u-type instructions
+
 Phat: b-type instructions
+
 Ngan: alu class
+
 ## Progress
 
 n/a = no tests available 
