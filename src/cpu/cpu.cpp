@@ -17,7 +17,7 @@ cpu::cpu(mem imem,mem dmem)
 void cpu::run()
 {
 
-        userInput();
+        // userInput();
     for (int i = 0; i < imem.getSize(); i++){
         int addr = PC/4;
         uint8_t opcode = getOpcode(imem.getMem(addr));
@@ -206,7 +206,7 @@ void cpu::word(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
         uint8_t baseRegVal = getReg(baseReg);
         uint32_t memAddr = alu.calculate(baseRegVal, bitShift, 0);
         imem.setMem(memAddr, sourceRegVal);
-        cout <<"result: " <<sourceRegVal<<endl;
+        cout <<"result: " <<static_cast<int>(sourceRegVal)<<endl;
 
     }
     if (loadStore == 1)
@@ -255,7 +255,7 @@ void cpu::i_type(uint32_t instr)
 void cpu::s_type(uint32_t instr)
 {
     cout << stringify(instr) << endl;
-    //following S-format
+   //following S-format
     // imm[11:5] || rs2 || rs1 || function3 || imm[4:0] || opcode
     // 7 bits || 5 bits || 5 bits || 3 bits || 5 bits || 7 bits
     int storeLoad = 0;
@@ -284,7 +284,7 @@ void cpu::s_type(uint32_t instr)
             //pass to halfword function w/ '0', key for store
             halfword(instr, storeBit, storeLoad);
             break;
-        case 0b0101:
+        case 0b010:
             //pass to word function w/ '0', key for store
             word(instr, storeBit, storeLoad);
             break;
@@ -488,8 +488,10 @@ string cpu::stringify(int32_t instr)
             str = "\n" + str + " x" + to_string(rs1) + ", x" + to_string(rs2) + ", label_" + to_string(imm_branch);
             break;
         case L:
+            str = "\n" + str + " x" + to_string(rd) + ", " + to_string(imm12) +"(x" + to_string(rs1) +")";
+            break;
         case S: 
-            str = "\n" + str + " x" + to_string(rd) + ", " + to_string(funct7) +"(x" + to_string(rs1) +")";
+            str = "\n" + str + " x" + to_string(rs2) + ", " + to_string(imm_branch) +"(x" + to_string(rs1) +")";
             break;
         case JALR:
             str = "\n" + str + " x" + to_string(rd) + ", x" + to_string(rs1) + ", " + to_string(imm12) ;
