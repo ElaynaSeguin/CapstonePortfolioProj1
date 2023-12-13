@@ -84,6 +84,7 @@ private:
     //RUN COMMANDS
     void writeFile(string);
     void displayOptions();
+    void displayReg();
     string userInput();
     void clockStart();
     void clockStop();

@@ -44,6 +44,18 @@ bool cpu::checkBreakpt(){
     return true;
 }
 
+void cpu::displayReg(){
+    const int columnWidth = 10;
+    cout << endl << setfill('-') << setw(columnWidth * 2) << "" << setfill(' ') << endl;
+    cout << left << setw(columnWidth) << "Register" << setw(columnWidth) << "Value" << endl;
+    cout << setfill('-') << setw(columnWidth * 2) << "" << setfill(' ') << endl;
+    for (int i = 0; i < 32; i++) 
+        cout << left << setw(columnWidth) << "x" + to_string(i) << setw(columnWidth) << reg.readReg(i) << endl;
+    cout << endl << "--------------------" << endl;
+    cout << " Total time: " << totalTime/1000.0 << "s" 
+         << endl <<"--------------------" << endl << endl;
+}
+
 void cpu::run()
 {
     string input, bk;
@@ -115,6 +127,9 @@ void cpu::run()
                         breakpoints[i]=num;
                 }
                 break;
+            case 'v': //hidden function 
+                displayReg();
+                break;
             default:
                 cout << "invalid input" << endl;
         }
@@ -122,16 +137,7 @@ void cpu::run()
         keepGoing(); //check if end of program
     }
 
-    //Display all register at the end
-    const int columnWidth = 10;
-    cout << endl << setfill('-') << setw(columnWidth * 2) << "" << setfill(' ') << endl;
-    cout << left << setw(columnWidth) << "Register" << setw(columnWidth) << "Value" << endl;
-    cout << setfill('-') << setw(columnWidth * 2) << "" << setfill(' ') << endl;
-    for (int i = 0; i < 32; i++) 
-        cout << left << setw(columnWidth) << "x" + to_string(i) << setw(columnWidth) << reg.readReg(i) << endl;
-    cout << endl << "--------------------" << endl;
-    cout << " Total time: " << totalTime/1000.0 << "s" 
-         << endl <<"--------------------" << endl << endl;
+    displayReg();
 }
 
 // USER OPTIONS FUNCTIONS
@@ -510,7 +516,7 @@ void cpu::jal(uint32_t instr)
 {
     uint8_t rd = getrd(instr);
     uint32_t offset = get_jal_offset(instr);
-    uint32_t result = PC + offset;
+    uint32_t result = PC + 4;
     reg.writeReg(rd, result);
     PC += offset;
 }
@@ -700,6 +706,7 @@ void cpu::displayOptions()
        << "b[pc] - set breakpoint"
        << endl
        << "c     - continue execution";
+    cout << endl << "v     - view all Registers (delete/hidden option)";
 }
 
 string cpu::userInput()
