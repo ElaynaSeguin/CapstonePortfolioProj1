@@ -2,7 +2,9 @@
 #include <cstdint>
 #include <stdint.h>
 #include <string.h>
+#include <fstream>
 #include <ctime>
+#include <iomanip>
 #include "../mem/mem.cpp"
 #include "../reg/reg.cpp"
 #include "../alu/alu.cpp"
@@ -26,6 +28,7 @@ private:
     alu alu;
     uint32_t PC;
     bool running;
+    bool noBreakpt;
     // vector<uint32_t> instr;
     // OPCODES
     const static uint8_t R = 0b00110011;    
@@ -81,11 +84,15 @@ private:
     //RUN COMMANDS
     void writeFile();
     void displayOptions();
-    void userInput();
+    string userInput();
     void clockStart();
     void clockStop();
     clock_t timer;
     int totalTime;
+    bool keepGoing();
+    bool checkBreakpt();
+    void runInstruction();
+    uint32_t breakpoints[5];
 };
 
 #endif

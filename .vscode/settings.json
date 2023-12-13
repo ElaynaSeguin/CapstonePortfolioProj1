@@ -3,6 +3,8 @@
         "string": "cpp",
         "iostream": "cpp",
         "branch_translated": "cpp",
-        "istream": "cpp"
+        "istream": "cpp",
+        "ostream": "cpp",
+        "ios": "cpp"
     }
 }

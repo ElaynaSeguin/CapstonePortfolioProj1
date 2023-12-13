@@ -10,54 +10,118 @@ cpu::cpu(mem imem,mem dmem)
     this->imem = imem;
     this->dmem = dmem;
     running = true;
+    noBreakpt = true;
     PC = 0;
     totalTime=0;
 }
 
+void cpu::runInstruction(){
+    int addr = PC/4;
+    uint32_t instr = imem.getMem(addr);
+    cout << stringify(instr);// << endl;
+    uint8_t opcode = getOpcode(instr);
+    switch(opcode) {
+        case R: r_type(instr); PC += 4; break;
+        case I: i_type(instr); PC += 4; break;
+        case S: s_type(instr); PC += 4; break;
+        case L: l_type(instr); PC += 4; break;
+        case B: b_type(instr); break;
+        case JAL: jal(instr); break;
+        case JALR: jalr(instr); break;
+        case LUI: lui(instr); PC += 4; break;
+        case AUIPC: auipc(instr); PC += 4; break;
+    }
+}
+
+bool cpu::checkBreakpt(){
+    for (int i = 0; i < 5; i++)
+    {
+        if(breakpoints[i]==PC)
+            return false;
+    }
+    return true;
+}
+
 void cpu::run()
 {
+    string input, bk;
+    char ch;
+    int num;
+    uint32_t instr;
 
-        // userInput();
-    for (int i = 0; i < imem.getSize(); i++){
-        int addr = PC/4;
-        uint8_t opcode = getOpcode(imem.getMem(addr));
-        switch (opcode)
-        {
-        case R:
-            r_type(imem.getMem(addr));
-            PC += 4;
-            break;
-        case I:
-            i_type(imem.getMem(addr));
-            PC += 4;
-            break;
-        case S:
-            s_type(imem.getMem(addr));
-            PC += 4;
-            break;
-        case L:
-            l_type(imem.getMem(addr));
-            PC += 4;
-            break;
-        case B:
-            b_type(imem.getMem(addr));
-            break;
-        case JAL:
-            jal(imem.getMem(addr));
-            break;
-        case JALR:
-            jalr(imem.getMem(addr));
-            break;
-        case LUI:
-            lui(imem.getMem(addr));
-            PC += 4;
-            break;
-        case AUIPC:
-            auipc(imem.getMem(addr));
-            PC += 4;
-            break;
+    while(keepGoing()){
+        // checkBreakpt();
+        input = userInput();
+        ch = input[0];
+        switch(ch){
+            case 'r':
+                // cout << noBreakpt << " "<< keepGoing() << endl;
+                // cout << "input check:";
+                // cin >> bk;
+                clockStart();
+                while(noBreakpt && keepGoing()){
+                    runInstruction();
+                    noBreakpt=checkBreakpt();
+                }
+                clockStop();
+                break;
+            case 'c':
+                do{
+                    runInstruction();
+                    noBreakpt=checkBreakpt();
+                }
+                while(noBreakpt);
+                    
+                break;
+            case 's':
+                runInstruction();
+                break;
+            case 'x':
+                input = input.substr(1, 2);
+                num = stoi(input);
+                cout << " x" << num << " - " << reg.readReg(num) <<endl;
+                break;
+            case '0':
+                input = input.substr(2, 8);
+                num = stoi(input);
+                cout << "0x" << num << " = " << imem.getMem(num) << endl;
+                break;
+            case 'p':
+                cout << "PC = " << PC << endl;
+                break;
+            case 'i':
+                num = PC/4+4;
+                instr = imem.getMem(num);
+                cout << "next instruction: " << stringify(instr) << endl;
+                break;
+            case 'b':
+                cout << "enter a brekapoint (ex. 0x12345678): ";
+                getline(cin,bk);
+                bk = bk.substr(2,8);
+                num = stoi(bk);
+                for (int i = 0; i < 5; i++)
+                {
+                    if(breakpoints[i]!=0) //assume no breakpt in 1st line
+                        breakpoints[i]=num;
+                }
+                break;
+            default:
+                cout << "invalid input" << endl;
         }
+
+        keepGoing(); //check if end of program
     }
+
+    //Display all register at the end
+    const int columnWidth = 10;
+    cout << endl << setfill('-') << setw(columnWidth * 2) << "" << setfill(' ') << endl;
+    cout << left << setw(columnWidth) << "Register" << setw(columnWidth) << "Value" << endl;
+    cout << setfill('-') << setw(columnWidth * 2) << "" << setfill(' ') << endl;
+    for (int i = 0; i < 32; i++) 
+        cout << left << setw(columnWidth) << "x" + to_string(i) << setw(columnWidth) << reg.readReg(i) << endl;
+    cout << endl << "--------------------" << endl;
+    cout << " Total time: " << totalTime/1000.0 << "s" 
+         << endl <<"--------------------" << endl << endl;
 }
 
 // USER OPTIONS FUNCTIONS
@@ -242,7 +306,7 @@ void cpu::word(uint32_t instr, uint8_t bitShift, int loadStore, int sign)
         int16_t baseRegVal = getReg(baseReg);
         int32_t memAddr = alu.calculate(baseRegVal, bitShift, 0);
         dmem.setMem(memAddr, sourceRegVal);
-        cout << "result raw: " << sourceRegVal<<endl;
+        cout << endl<<"result raw: " << sourceRegVal<<endl;
         cout <<"result: " <<static_cast<int>(sourceRegVal)<<endl;
 
     }
@@ -254,7 +318,7 @@ void cpu::word(uint32_t instr, uint8_t bitShift, int loadStore, int sign)
         int32_t memAddr = alu.calculate(sourceRegVal, bitShift, 0);
         int32_t memVal = dmem.getMem(memAddr);
         reg.writeReg(rd, memVal);
-        cout <<"result: " <<static_cast<int>(memVal)<<endl;
+        cout <<endl<<"result: " <<static_cast<int>(memVal)<<endl;
     }
 }
 
@@ -271,8 +335,7 @@ void cpu::r_type(uint32_t instr)
     reg.writeReg(rd, result);                            // write to reg
 
     // DEBUG
-    cout << stringify(instr)<< endl;
-     cout << "val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
+     cout << endl<<"val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
 }
 void cpu::i_type(uint32_t instr)
 {
@@ -286,18 +349,16 @@ void cpu::i_type(uint32_t instr)
     if (alu_op == SLL || alu_op == SRL || alu_op == SRA)
         val2 = rs2; // getShamt()
 
-    cout << stringify(instr) << endl;
     int32_t result = alu.calculate(val1, val2, alu_op); // execute
     reg.writeReg(rd, result);                           // write to reg
 
     // DEBUG
-     cout << "val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
+     cout << endl<<"val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
     // cout << "(binary)result:" << bitset<32>(result)<<endl;
     // cout << "register: "<<reg.readReg(rd)<<endl;   //check if stored properly
 }
 void cpu::s_type(uint32_t instr)
 {
-    cout << stringify(instr) << endl;
    //following S-format
     // imm[11:5] || rs2 || rs1 || function3 || imm[4:0] || opcode
     // 7 bits || 5 bits || 5 bits || 3 bits || 5 bits || 7 bits
@@ -339,7 +400,6 @@ void cpu::s_type(uint32_t instr)
 }
 void cpu::b_type(uint32_t instr)
 {
-    cout << stringify(instr) << endl;
     uint8_t funct3 = getfunct3(instr);
     uint32_t offset = get_branch_imm(instr);
     uint8_t rs1 = getrs1(instr);
@@ -382,7 +442,6 @@ void cpu::b_type(uint32_t instr)
 }
 void cpu::l_type(uint32_t instr)
 {
-   cout << stringify(instr) << endl; 
  //following L-format
     // imm[11:0] || rs1 || function3 || rd || opcode
     // 12 bits || 5 bits || 3 bits || 5 bits || 7 bits
@@ -423,26 +482,43 @@ void cpu::l_type(uint32_t instr)
     }
 }
 
+
 void cpu::jal(uint32_t instr)
 {
-    cout << stringify(instr) << endl;
+    uint32_t PC = getPC();
+    uint8_t rd = getrd(instr);
+    uint32_t offset = get_jal_offset(instr);
+    uint32_t result = PC + 4;
+    reg.writeReg(rd, result);
+    PC += offset;
 }
 void cpu::jalr(uint32_t instr)
 {
-    cout << stringify(instr) << endl;
+    uint32_t imm = getimm12(instr);
+    imm = imm & 0xfffffffe; // set the least-significant bit of the result to zero
+    if ((imm >> 12) != 0){
+        imm = imm | 0xfffff000; // add sign extension
+    }
+    uint32_t PC = getPC();
+    uint8_t rd = getrd(instr);
+    uint8_t rs1 = getrs1(instr);
+    uint32_t rs1_val = reg.readReg(rs1);
+    uint32_t offset = rs1_val + imm;
+    
+    uint32_t result = PC + 4;
+    reg.writeReg(rd, result);
+    PC += offset;
 }
 void cpu::lui(uint32_t instr)
 {
-    cout << stringify(instr) << endl;
     uint8_t rd = getrd(instr);
     uint32_t imm = getimm20(instr);
     uint32_t result = imm << 12;
     reg.writeReg(rd, result);
-    cout << result;
+    cout << " result:" << result << endl;
 }
 void cpu::auipc(uint32_t instr)
 {
-    cout << stringify(instr) << endl;
     uint8_t rd = getrd(instr);
     uint32_t imm = getimm20(instr);
     uint32_t result = PC + (imm << 12);
@@ -587,34 +663,36 @@ void cpu::clockStop()
 
 void cpu::displayOptions()
 {
-  cout << "\n"
+  cout << endl
+       << "-----------------------------------------------"
+       << endl
        << "r     - run entire program"
-       << "\n"
+       << endl
        << "s     - run next instruction"
-       << "\n"
+       << endl
        << "x0    - view content in this register"
-       << "\n"
+       << endl
        << "0x12345678 - view content at this address"
-       << "\n"
+       << endl
        << "pc    - viewb  PC value"
-       << "\n"
+       << endl
        << "insn  - view next instruction"
-       << "\n"
+       << endl
        << "b[pc] - set breakpoint"
-       << "\n"
+       << endl
        << "c     - continue execution";
 }
 
-void cpu::userInput()
+string cpu::userInput()
 {
     // clock_t timer;
-  uint32_t breakpoints[5] = {0xFFFFFFFF};
+//   uint32_t breakpoints[5] = {0xFFFFFFFF};
   int num;
-  string input = " ";
+  string input = "";
   displayOptions();
-  cout << "\n\nEnter a command: ";
+  cout << endl << endl << "Enter a command: ";
   getline(cin, input);
-  cout << endl << input;
+  return input;
 
   // Remove all whitespaces from input
 //   input.erase(remove_if(input.begin(), input.end(), ::isspace), input.end());
@@ -624,106 +702,74 @@ void cpu::userInput()
   // VALIDATE INPUT
   //  run - execute all
   //  c - continue
-  if (input == "r" || input == "c")
-  {
-    // clockStart();
-        for (int i = 0; i < imem.getSize(); i++){
-        uint8_t opcode = getOpcode(imem.getMem(i));
-        switch (opcode)
-        {
-        case R:
-            r_type(imem.getMem(i));
-            PC += 4;
-            break;
-        case I:
-            i_type(imem.getMem(i));
-            PC += 4;
-            break;
-        case S:
-            s_type(imem.getMem(i));
-            PC += 4;
-            break;
-        case L:
-            l_type(imem.getMem(i));
-            PC += 4;
-            break;
-        case B:
-            b_type(imem.getMem(i));
-            break;
-        case JAL:
-            jal(imem.getMem(i));
-            break;
-        case JALR:
-            jalr(imem.getMem(i));
-            break;
-        case LUI:
-            lui(imem.getMem(i));
-            break;
-        case AUIPC:
-            auipc(imem.getMem(i));
-            break;
-        }
-    }
+//   if (input == "r" || input == "c")
+//   {
+//       // clockStart();
 
+//   }
+//   // s - step through
+//   else if (input == "s")
+//   {
+//   }
+//   // x0 - x31
+//   else if (input == "x")
+//   {
+//       input = input.substr(1, 2);
+//       num = stoi(input);
+//     //   if (num > 31)
+//     //       cout << "Invalid input\n";
+//         //   cout << reg.readReg(num);
+//   }
+//   // 0x12345678 - return val at address
+//   else if (input == "0")
+//   {
+//       input = input.substr(2, 8);
+//       num = stoi(input);
+//       // cout << CPU.getMem(num);
+//       //assume address = multiple of 4
+//       //return data memory or instruction? --> account for both b/c 0 - 0x10, 0x10 - 0x7f
 
-  }
-  // s - step through
-  else if (input == "s")
-  {
-  }
-  // x0 - x31
-  else if (input == "x")
-  {
-    input = input.substr(1, 2);
-    num = stoi(input);
-    if (num > 31)
-      cout << "Invalid input\n";
-    // else{
-    //     cout << CPU.getReg(num);
-    // }
-  }
-  // 0x12345678 - return val at address
-  else if (input == "0")
-  {
-    input = input.substr(2, 8);
-    num = stoi(input);
-    // cout << CPU.getMem(num);
-  }
-  // pc - return PC
-  else if (input == "p")
-  {
-    if (input != "pc")
-      cout << "Invalid input\n";
-    // else{
-    //     cout << "0x"<<CPU.getPC();
-    // }
-  }
-  // insn - return NEXT asm instruction
-  else if (input == "i")
-  {
-    if (input != "insn")
-      cout << "Invalid input\n";
-    // else{
-    //     cout << CPU.debug();
-    // }
-  }
-  // b[pc] - add breakpoint     assume format -> b[0x12345678]
-  else if (input == "b")
-  {
-    input = input.substr(4, 8);
-    num = stoi(input);
-    // ASSUME SORTED IN-ORDER....
-    for (int i = 0; i < 5; i++)
-    { // check is breakpoints[] is full
-      if (breakpoints[i] != 0xFFFFFFFF)
-      {
-        breakpoints[i] = num;
-        break;
-      }
-    }
-  }
-  else
-  {
-    cout << "Invalid input\n";
-  }
+//   }
+//   // pc - return PC
+//   else if (input == "p")
+//   {
+//       if (input != "pc")
+//           cout << "Invalid input\n";
+//       // else{
+//       //     cout << "0x"<<CPU.getPC();
+//       // }
+//   }
+//   // insn - return NEXT asm instruction
+//   else if (input == "i")
+//   {
+//       if (input != "insn")
+//           cout << "Invalid input\n";
+//       // else{
+//       //     cout << CPU.debug();
+//       // }
+//   }
+//   // b[pc] - add breakpoint     assume format -> b[0x12345678]
+//   else if (input == "b")
+//   {
+//       input = input.substr(4, 8);
+//       num = stoi(input);
+//       // ASSUME SORTED IN-ORDER....
+//       for (int i = 0; i < 5; i++)
+//       { // check is breakpoints[] is full
+//           if (breakpoints[i] != 0xFFFFFFFF)
+//           {
+//               breakpoints[i] = num;
+//               break;
+//           }
+//       }
+//   }
+//   else
+//   {
+//       cout << "Invalid input\n";
+//   }
+}
+
+bool cpu::keepGoing(){
+    // cout << "size"<<imem.getSize() << endl;
+    return (PC/4) < imem.getSize(); //-1 to account for blank-zero instr
 }

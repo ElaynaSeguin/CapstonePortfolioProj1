@@ -13,7 +13,7 @@ reg::reg()
 }
 
 // Read the value from register rd
-uint32_t reg::readReg(int8_t rd) const
+int32_t reg::readReg(int8_t rd) const
 {
     if (rd == 0)
         return 0; // x0 is hardwired to zero

@@ -16,7 +16,8 @@ int main()
   mem imem,dmem;
   imem.setStartPC(0);
   dmem.setStartPC(0x10010000);
-  cout << "RISCV SIMULATOR\n";
+  cout << "-----------------------------------------------" << endl;
+  cout << "RISCV SIMULATOR" << endl;
   readFile(imem, "imem.dat"); // LOAD INSTRUCTIONS
   readFile(dmem, "dmem.dat");
 
@@ -61,7 +62,7 @@ void readFile(mem& result, string filename)
     cout << "ERROR. Cannot open file";
   else
   {
-    cout << "~~ Loading "<< filename <<" instructions ~~\n";
+    cout << endl << "Loading "<< filename <<" instructions" << endl;
     string str = "";
     string binary;
     int i = 0;
@@ -71,13 +72,15 @@ void readFile(mem& result, string filename)
       if (str.length() == 32)
       {
         uint32_t val = bitset<32>(str).to_ulong(); // Convert string to binary
+        if(val!=0){
         result.setMem(i,val);   // save instruction
         i++;
         result.incrSize();
+        }
         str.clear();
       }
     }
     file.close();
-    cout << "~~ Loading complete ~~\n";
+    // cout << "~~ Loading complete ~~\n";
   }
 }
