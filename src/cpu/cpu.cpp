@@ -19,8 +19,8 @@ void cpu::runInstruction(){
     int addr = PC/4;
     uint32_t instr = imem.getMem(addr);
     string str = stringify(instr);// << endl;
-    cout << str;// << endl;
-    // writeFile(str);
+    // cout << str;// << endl;
+    writeFile(str);
     uint8_t opcode = getOpcode(instr);
     switch(opcode) {
         case R: r_type(instr); PC += 4; break;
@@ -63,10 +63,10 @@ void cpu::run()
     int num;
     uint32_t instr;
 
-    for (int i = 0; i < 20; i++)
-    {
-        cout << "dmem[" << i << "]"<<dmem.getMem(i) << endl;
-    }
+    // for (int i = 0; i < 20; i++)
+    // {
+    //     cout << "dmem[" << i << "]"<<dmem.getMem(i) << endl;
+    // }
     // cout << "dmem[" << i << "]"<<dmem.getMem(i) << endl;
 
 
@@ -153,6 +153,37 @@ void cpu::run()
     }
 
     displayReg();
+
+    //PRINT MEMORY
+    cout << "DATA MEMORY"<<endl;
+    cout << "--------------------" << endl;
+    cout << "address   |  value" << endl;
+    cout << "--------------------" << endl;
+    int i=0;
+    int k=0;
+    while(i < 13)
+    {
+        cout << "0x" << hex<<k+dmem.getStartPC() << ":  "<<bitset<32>(dmem.getMem(i)) << endl;
+        i+=1;
+        k+=4;
+    }
+    cout << endl << "INSTRUCTION MEMORY" << endl;
+    cout << "--------------------" << endl;
+    cout << "address   |  value" << endl;
+    cout << "--------------------" << endl;
+    
+    int j=0;
+    while(j < 13)
+    {
+        cout << "0x000000" << hex<<j+imem.getStartPC() << ":  "<<bitset<32>(imem.getMem(j)) << endl;
+        j+=4;
+    }
+    while(j >=10 && j < 60)
+    {
+        cout << "0x00000" << hex<<j+imem.getStartPC() << ":  "<<bitset<32>(imem.getMem(j)) << endl;
+        j+=4;
+    }
+    
 }
 
 // USER OPTIONS FUNCTIONS
@@ -263,7 +294,7 @@ void cpu::byte(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
         int8_t baseRegVal = getReg(baseReg);
         int32_t memAddr = alu.calculate(baseRegVal, imm, 0);
         imem.setMem(memAddr, shiftSourceVal);
-        cout <<"result: " <<shiftSourceVal<<endl;
+        // cout <<"result: " <<shiftSourceVal<<endl;
     }
      if(loadStore == 1){
         //check here whether signed or unsigned based on function argument param sign (only byte and halfword)
@@ -278,10 +309,10 @@ void cpu::byte(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
         cout << "Dmem function: " << dmem.getMem_byte(memAddr-dmem.getStartPC());
         int32_t memVal;
 
-    cout << "Base Address: " << baseAddr << endl;
-    cout << "Immediate Value: " << imm << endl;
-    cout << "Calculated Mem Address: " << memAddr << endl;
-    cout << "Calculated Mem Value (memval8): " << memVal8 << endl;
+    // cout << "Base Address: " << baseAddr << endl;
+    // cout << "Immediate Value: " << imm << endl;
+    // cout << "Calculated Mem Address: " << memAddr << endl;
+    // cout << "Calculated Mem Value (memval8): " << memVal8 << endl;
         //check if signed and left most bit is 1 for negative
         //if(sign == 1  && (memVal8 & 0x80)){
         if((((memVal8 & 0b10000000) >> 7 ) == 1)&& sign == 0){
@@ -353,8 +384,8 @@ void cpu::word(uint32_t instr, uint8_t bitShift, int loadStore, int sign)
         int16_t baseRegVal = getReg(baseReg);
         int32_t memAddr = alu.calculate(baseRegVal, bitShift, 0);
         dmem.setMem(memAddr/4, sourceRegVal);
-        cout << endl<<"result raw: " << sourceRegVal<<endl;
-        cout <<"result: " <<static_cast<int>(sourceRegVal)<<endl;
+        // cout << endl<<"result raw: " << sourceRegVal<<endl;
+        // cout <<"result: " <<static_cast<int>(sourceRegVal)<<endl;
 
     }
     if(loadStore == 1){
@@ -365,7 +396,7 @@ void cpu::word(uint32_t instr, uint8_t bitShift, int loadStore, int sign)
         int32_t memAddr = alu.calculate(sourceRegVal, bitShift, 0);
         int32_t memVal = dmem.getMem(memAddr/4);
         reg.writeReg(rd, memVal);
-        cout <<endl<<"result: " <<static_cast<int>(memVal)<<endl;
+        // cout <<endl<<"result: " <<static_cast<int>(memVal)<<endl;
     }
 }
 
@@ -382,7 +413,7 @@ void cpu::r_type(uint32_t instr)
     reg.writeReg(rd, result);                            // write to reg
 
     // DEBUG
-     cout << endl<<"val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
+    //  cout << endl<<"val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
 }
 void cpu::i_type(uint32_t instr)
 {
@@ -400,7 +431,7 @@ void cpu::i_type(uint32_t instr)
     reg.writeReg(rd, result);                           // write to reg
 
     // DEBUG
-     cout << endl<<"val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
+    //  cout << endl<<"val1:" << static_cast<int>(val1) << " val2:" << static_cast<int>(val2) << " result:" << static_cast<int>(result) << endl;
     // cout << "(binary)result:" << bitset<32>(result)<<endl;
     // cout << "register: "<<reg.readReg(rd)<<endl;   //check if stored properly
 }
@@ -727,7 +758,8 @@ void cpu::displayOptions()
        << "b[pc] - set breakpoint"
        << endl
        << "c     - continue execution";
-    cout << endl << "v     - view all Registers (delete/hidden option)";
+    cout << endl << "v     - view all Registers";
+    cout << endl << "m     - view all Memory";
 }
 
 string cpu::userInput()
