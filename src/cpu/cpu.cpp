@@ -196,22 +196,26 @@ void cpu::word(uint32_t instr, uint16_t bitShift, int loadStore, int sign)
 {
     // check if string
     // if string,
-    uint8_t sourceReg = getrs1(instr);
+    uint8_t sourceReg = getrs2(instr);
 
     if (loadStore == 0)
     {
         // store word
-        uint8_t baseReg = getrs2(instr);
-        uint8_t sourceRegVal = getReg(sourceReg);
-        uint8_t baseRegVal = getReg(baseReg);
-        uint32_t memAddr = alu.calculate(baseRegVal, bitShift, 0);
+        int8_t baseReg = getrs1(instr);
+        int8_t sourceRegVal = getReg(sourceReg);
+        int8_t baseRegVal = getReg(baseReg);
+        int32_t memAddr = alu.calculate(baseRegVal, bitShift, 0);
         imem.setMem(memAddr, sourceRegVal);
         cout <<"result: " <<static_cast<int>(sourceRegVal)<<endl;
 
     }
-    if (loadStore == 1)
-    {
-        // check here whether signed or unsigned based on function argument param sign (only byte and halfword)
+    if(loadStore == 1){
+        //check here whether signed or unsigned based on function argument param sign (only byte and halfword)
+        uint8_t rd = getrd(instr);
+        int8_t memAddr = alu.calculate(sourceReg, bitShift, 0);
+        int32_t memVal = imem.getMem(memAddr);
+        reg.writeReg(rd, memVal);
+        cout <<"result: " <<static_cast<int>(memVal)<<endl;
     }
 }
 
