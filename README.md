@@ -33,13 +33,13 @@ n/a = no tests available
 | BGE     | `BGE rs1,rs2,offset`  | Branch Greater than Equal          | done |
 | BLTU    | `BLTU rs1,rs2,offset` | Branch Less Than Unsigned          | n/a |
 | BGEU    | `BGEU rs1,rs2,offset` | Branch Greater than Equal Unsigned | n/a |
-| LB      | `LB rd,offset(rs1)`   | Load Byte                          |  |
-| LH      | `LH rd,offset(rs1)`   | Load Half                          |  |
+| LB      | `LB rd,offset(rs1)`   | Load Byte                          | fail |
+| LH      | `LH rd,offset(rs1)`   | Load Half                          | fail |
 | LW      | `LW rd,offset(rs1)`   | Load Word                          | done |
-| LBU     | `LBU rd,offset(rs1)`  | Load Byte Unsigned                 |  |
-| LHU     | `LHU rd,offset(rs1)`  | Load Half Unsigned                 |  |
-| SB      | `SB rs2,offset(rs1)`  | Store Byte                         |  |
-| SH      | `SH rs2,offset(rs1)`  | Store Half                         |  |
+| LBU     | `LBU rd,offset(rs1)`  | Load Byte Unsigned                 | fail |
+| LHU     | `LHU rd,offset(rs1)`  | Load Half Unsigned                 | fail |
+| SB      | `SB rs2,offset(rs1)`  | Store Byte                         | fail |
+| SH      | `SH rs2,offset(rs1)`  | Store Half                         | fail |
 | SW      | `SW rs2,offset(rs1)`  | Store Word                         | done |
 | ADDI    | `ADDI rd,rs1,imm`     | Add Immediate                      | done |
 | SLTI    | `SLTI rd,rs1,imm`     | Set Less Than Immediate            | done |
