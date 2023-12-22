@@ -10,6 +10,13 @@ Phat: b-type instructions
 
 Ngan: alu class
 
+### List of References: 
+- https://luplab.gitlab.io/rvcodecjs/ (asm/binary instruction translation)
+- https://www.cs.cornell.edu/courses/cs3410/2019sp/riscv/interpreter/ (online riscv simulator)
+- https://www.rapidtables.com/convert/number/decimal-to-binary.html? (hex,binary,decimal conversion)
+- https://github.com/Ohyoukillkenny/riscv-simulator (student#1 example riscv simulator)
+- https://github.com/fmash16/riscv_emulator (student#2 example riscv simulator)
+
 ## Progress
 
 n/a = no tests available 
